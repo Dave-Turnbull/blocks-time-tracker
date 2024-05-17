@@ -1,0 +1,27 @@
+merge data with timesheet properly
+    check if data visibility bug still exists
+add an eraser
+    maybe include right click as an eraser
+allow for data to not overwrite (a toggle button, maybe a lock symbol)
+    1. set activecells as the background instead of overlay, and only if there isnt a background already
+    2. make changes to merge data so the timesheet cuts into activetime
+    disable the eraser when this is on
+add redux so info isnt passed exessivly
+    handle mouse events via redux
+    handle data input via redux
+    split data from timesheet into individual days via redux
+    maybe handle cell encoding via redux
+highlight the current time cell by adding a class during render (if current day, if current time - current time + time interval)
+animate the cells appearing
+fix the toolbar
+    make it appear at bottom of window, not as a sticky div
+    general styling
+add a sidebar that includes the day's task
+add a history/popular tasks via the description input
+    on clicking the description tasks appear above it
+    typing in also doubles as a search function for existing tasks
+    clicking adds the correct colour too
+    maybe add a randomised data key? only if nessecary
+add week and month views
+    render 1 1440 cell per day, set up in a new component
+add user login

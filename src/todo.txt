@@ -1,0 +1,27 @@
+Change how the data is imported and displayed
+    2 arrays needed, 1 for the times, and another for the tasks
+    each task should contain a name, optional description, colour
+    each time should contain the day, start, end, a reference to the task ID and notes
+    the cell data should pull the times and reference the task to find the colour to display,
+    later add a selection tool when clicked will display the time in more detail (i.e. the notes)
+
+add redux so info isnt passed exessivly
+    handle mouse events via redux
+    handle data input via redux
+    split data from timesheet into individual days via redux
+    maybe handle cell encoding via redux
+
+highlight the current time cell by adding a class during render (if current day, if current time - current time + time interval)
+animate the cells appearing
+fix the toolbar
+    make it appear at bottom of window, not as a sticky div
+    general styling
+add a sidebar that includes the day's task
+add a history/popular tasks via the description input
+    on clicking the description tasks appear above it
+    typing in also doubles as a search function for existing tasks
+    clicking adds the correct colour too
+    maybe add a randomised data key? only if nessecary
+add week and month views
+    render 1 1440 cell per day, set up in a new component
+add user login

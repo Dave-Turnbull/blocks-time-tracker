@@ -1,0 +1,23 @@
+[
+  {
+    "2023-12-06": [
+      { "StartTime": 348, "EndTime": 600, "Color": "#ff0000" },
+      { "StartTime": 960, "EndTime": 1200, "Color": "#00ff00" },
+      { "StartTime": 1200, "EndTime": 1399, "Color": "#0000ff" }
+    ]
+  },
+  {
+    "2023-12-07": [
+      { "StartTime": 101, "EndTime": 205, "Color": "#ff63db" },
+      { "StartTime": 207, "EndTime": 210, "Color": "#ff98db" },
+      { "StartTime": 420, "EndTime": 600, "Color": "#ffff00" }
+    ]
+  },
+  {
+    "2023-12-08": [
+      { "StartTime": 600, "EndTime": 900, "Color": "#ff00ff" },
+      { "StartTime": 1200, "EndTime": 1440, "Color": "#0000ff" },
+      { "StartTime": 900, "EndTime": 950, "Color": "#000000" }
+    ]
+  }
+]
