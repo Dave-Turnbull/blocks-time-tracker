@@ -1,6 +1,25 @@
-export const Toolbar = ({inputValue, setInputValue, setMinuteInput, startDate, setStartDate, endDate, setEndDate, pickedColor, setPickedColor, taskTitle, settaskTitle, eraseTool, setEraseTool}) => {
+import { useContext } from "react";
+import { ToolbarContext } from "../contexts/ToolbarContext";
 
-/*===============
+export const Toolbar = () => {
+  const {
+    inputValue,
+    setInputValue,
+    minuteinput,
+    setMinuteInput,
+    startDate,
+    setStartDate,
+    endDate,
+    setEndDate,
+    pickedColor,
+    setPickedColor,
+    taskTitle,
+    settaskTitle,
+    eraseTool,
+    setEraseTool,
+  } = useContext(ToolbarContext);
+
+  /*===============
     EVENT HANDLERS
     ===============*/
 
@@ -53,50 +72,54 @@ export const Toolbar = ({inputValue, setInputValue, setMinuteInput, startDate, s
     setEraseTool(!eraseTool);
   };
 
-    return (
-        <div className="innercontainer toolbar">
-        {/* <p>Time: {targetTime}</p> */}
+  return (
+    <div className="innercontainer toolbar">
+      {/* <p>Time: {targetTime}</p> */}
+      <input
+        type="color"
+        value={pickedColor}
+        onChange={(e) => setPickedColor(e.target.value)}
+      />
+      <form>
+        {/* ... other input fields ... */}
+        <label>
+          Task Title:
+          <input
+            type="text"
+            value={taskTitle}
+            onChange={handletaskTitleChange}
+          />
+        </label>
+      </form>
+      <p>Time per cell: </p>
+      <form onSubmit={handleIntervalSubmit}>
         <input
-          type="color"
-          value={pickedColor}
-          onChange={(e) => setPickedColor(e.target.value)}
+          type="number"
+          value={inputValue}
+          onChange={handleIntervalChange}
         />
-        <form>
-          {/* ... other input fields ... */}
-          <label>
-            Task Title:
-            <input
-              type="text"
-              value={taskTitle}
-              onChange={handletaskTitleChange}
-            />
-          </label>
-        </form>
-        <p>Time per cell: </p>
-        <form onSubmit={handleIntervalSubmit}>
-          <input type="number" value={inputValue} onChange={handleIntervalChange} />
-          <button type="submit">Submit</button>
-        </form>
-        <form>
-          <label>
-            Start Date:
-            <input
-              type="date"
-              value={startDate}
-              onChange={handleStartDateChange}
-            />
-          </label>
-          <br></br>
-          <label>
-            End Date:
-            <input type="date" value={endDate} onChange={handleEndDateChange} />
-          </label>
-        </form>
-        <div>
-          <button onClick={handleToggleEraseTool}>
-                {eraseTool ? 'Disable Erase Tool' : 'Enable Erase Tool'}
-            </button>
-        </div>
+        <button type="submit">Submit</button>
+      </form>
+      <form>
+        <label>
+          Start Date:
+          <input
+            type="date"
+            value={startDate}
+            onChange={handleStartDateChange}
+          />
+        </label>
+        <br></br>
+        <label>
+          End Date:
+          <input type="date" value={endDate} onChange={handleEndDateChange} />
+        </label>
+      </form>
+      <div>
+        <button onClick={handleToggleEraseTool}>
+          {eraseTool ? "Disable Erase Tool" : "Enable Erase Tool"}
+        </button>
       </div>
-    )
-}
+    </div>
+  );
+};

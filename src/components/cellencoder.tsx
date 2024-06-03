@@ -11,7 +11,7 @@ const encodeCellFraction = (
   positionright,
   key
 ) => {
-  let partialData = {
+  const partialData = {
     id: key,
     style: {
       right: `${positionright}%`,
@@ -38,16 +38,16 @@ const encodeCells = (timeData, minuteinput) => {
   let hour = 0;
   let minute = 0;
   let partialDataKey = 0;
-  let cellsData = [];
-  let timeinterval = 1440 / minuteinput;
+  const cellsData = [];
+  const timeinterval = 1440 / minuteinput;
 
   if (minuteinput > 0) {
     //calculating background from colorData
-    let colorData = Array(timeinterval).fill(null);
+    const colorData = Array(timeinterval).fill(null);
     for (let i = 0; i < timeData.length; i++) {
       let starttime = timeData[i].StartTime / minuteinput;
       let endtime = timeData[i].EndTime / minuteinput;
-      let color = timeData[i].Color;
+      const color = timeData[i].Color;
 
       //IF THE TIME PERIOD DOESN'T PERFECTLY FIT INTO THE CELL
       if (!Number.isInteger(starttime) || !Number.isInteger(endtime)) {
@@ -116,13 +116,11 @@ const encodeCells = (timeData, minuteinput) => {
     }
 
     for (let i = 0; i < timeinterval; i++) {
-      let minutes;
-      let hours;
-      let innercolor = colorData[i];
-      hours = hour.toString().padStart(2, "0");
-      minutes = minute.toString().padStart(2, "0");
+      const innercolor = colorData[i];
+      const hours = hour.toString().padStart(2, "0");
+      const minutes = minute.toString().padStart(2, "0");
 
-      let cellData = {
+      const cellData = {
         id: i,
         className: "cell",
         time: `${hours}:${minutes}`,
