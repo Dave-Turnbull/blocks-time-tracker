@@ -1,63 +1,60 @@
-export const Block = ({ 
-    index, 
-    start, 
-    cell, 
-    dayToRender, 
-    activeCells, 
-    startIndex, 
-    endIndex, 
-    taskTitle, 
-    eraseTool, 
-    pickedColor 
+import { useContext } from "react";
+import { ToolbarContext } from "../contexts/ToolbarContext";
+import { ActiveCellsContext } from "../contexts/SelectCellsContext";
+
+export const Block = ({
+  index,
+  start,
+  cell,
+  dayToRender,
+  startIndex,
+  endIndex,
 }) => {
+  const { pickedColor, taskTitle, eraseTool } = useContext(ToolbarContext);
+  const { activeCells } = useContext(ActiveCellsContext);
 
-    return (
-        <div
-            id={`cell-${index + start}`}
+  return (
+    <div
+      id={`cell-${index + start}`}
+      draggable="false"
+      key={index + start}
+      className={cell.className}
+      style={cell.style}
+      data-day={dayToRender}
+      data-time={cell.time}
+      data-cell-index={index + start}
+    >
+      {activeCells &&
+        dayToRender === activeCells.day &&
+        index + start >= startIndex &&
+        index + start <= endIndex && (
+          <div
+            className="overlay"
             draggable="false"
-            key={index + start}
-            className={cell.className}
-            style={cell.style}
-            data-day={dayToRender}
-            data-time={cell.time}
-            data-cell-index={index + start}
-        >
-            {activeCells &&
-                dayToRender === activeCells.day &&
-                index + start >= startIndex &&
-                index + start <= endIndex && (
-                    <div
-                        className="overlay"
-                        draggable="false"
-                        data-tasktitle={taskTitle}
-                        style={{
-                            zIndex: 100,
-                            right: "0%",
-                            left: "0%",
-                            position: "absolute",
-                            top: "0%",
-                            bottom: "0%",
-                            backgroundColor: eraseTool ? '#dedede' : pickedColor,
-                        }}
-                    />
-                )}
-            {cell.partialData && (
-                <div className="partialDataContainer">
-                    {cell.partialData.map((part) => (
-                        <div
-                            key={part.key}
-                            className={part.className}
-                            style={part.style}
-                        />
-                    ))}
-                </div>
-            )}
+            data-tasktitle={taskTitle}
+            style={{
+              zIndex: 100,
+              right: "0%",
+              left: "0%",
+              position: "absolute",
+              top: "0%",
+              bottom: "0%",
+              backgroundColor: eraseTool ? "#dedede" : pickedColor,
+            }}
+          />
+        )}
+      {cell.partialData && (
+        <div className="partialDataContainer">
+          {cell.partialData.map((part) => (
+            <div
+              key={part.id}
+              className={"innercell"}
+              style={part.style}
+              data-key={part.id}
+            />
+          ))}
         </div>
-    )
-}
-
-const styles = {
-    block: {
-
-    }
-}
+      )}
+    </div>
+  );
+};

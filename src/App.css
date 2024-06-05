@@ -64,6 +64,7 @@ body {
   bottom: 0;
   right: 0;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .innercell {
