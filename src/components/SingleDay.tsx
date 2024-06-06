@@ -1,12 +1,11 @@
 import { useState, useEffect, useContext } from "react";
 import { ActiveCellsContext } from "../contexts/SelectCellsContext.tsx"; // Import the context
 import timesToCells from "../utils/timesToCells.tsx";
-import { Block } from "./Block.tsx";
+import { Cell } from "./Cell/Cell.tsx";
 import { cellGroupTotalTime } from "../data/cellGroupTotalTime.tsx";
 import { ToolbarContext } from "../contexts/ToolbarContext.tsx";
 
 const SingleDay = ({ dayToRender, singleDayData }) => {
-  console.log(singleDayData);
   const { activeCells } = useContext(ActiveCellsContext);
   const { minuteinput } = useContext(ToolbarContext);
   const [cellsData, setCellsData] = useState([]);
@@ -48,16 +47,22 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
             return (
               <div key={groupIndex} className="groupContainer">
                 <div className="cellsGroup">
-                  {groupOfCells.map((cell, index) => (
-                    <Block
-                      index={index}
-                      start={start}
-                      cell={cell}
-                      dayToRender={dayToRender}
-                      startIndex={startIndex}
-                      endIndex={endIndex}
-                    />
-                  ))}
+                  {groupOfCells.map((cell, index) => {
+                    const cellIndex = index + start;
+                    const isSelected =
+                      activeCells &&
+                      dayToRender === activeCells.day &&
+                      cellIndex >= startIndex &&
+                      cellIndex <= endIndex;
+                    return (
+                      <Cell
+                        cellIndex={cellIndex}
+                        cell={cell}
+                        dayToRender={dayToRender}
+                        selected={isSelected}
+                      />
+                    );
+                  })}
                 </div>
                 <div className="timeLabel">{timeLabel}</div>
               </div>

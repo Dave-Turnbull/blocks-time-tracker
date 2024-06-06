@@ -25,16 +25,11 @@ export const ActiveCellsProvider = ({ children }) => {
   const [dataToInput, setDataToInput] = useState(null);
   const [targetTime, setTargetTime] = useState(0);
 
-  useEffect(() => {
-    console.log(activeCells, "activeCells");
-  }, [activeCells]);
-
   //trigger the functions when the mouse events are started
   useEffect(() => {
     const handleMouseDown = (e) => {
       const targetDay = e.target.getAttribute("data-day");
       const targetCellIndex = e.target.getAttribute("data-cell-index");
-      console.log(targetDay, targetCellIndex);
       if (targetDay && targetCellIndex) {
         e.preventDefault();
         setActiveCells({
@@ -49,7 +44,6 @@ export const ActiveCellsProvider = ({ children }) => {
           EndCell: null,
         });
       }
-      console.log(activeCells);
     };
 
     const handleMouseMove = (e) => {
@@ -65,7 +59,6 @@ export const ActiveCellsProvider = ({ children }) => {
           "cellsGroup",
           "innercontainer",
         ];
-        console.log(targetDay, activeCells);
         if (targetDay && targetCellIndex && targetDay === activeCells.day) {
           setActiveCells((prevState) => ({
             ...prevState,
@@ -76,7 +69,6 @@ export const ActiveCellsProvider = ({ children }) => {
             target.classList.contains(className)
           )
         ) {
-          console.log("TARGET: ", target);
           setActiveCells({
             day: null,
             StartCell: null,
@@ -108,14 +100,13 @@ export const ActiveCellsProvider = ({ children }) => {
         const newdataToInput = {
           [activeCells.day]: [
             {
-              StartTime: startIndex * minuteinput,
-              EndTime: endIndex * minuteinput,
+              startTime: startIndex * minuteinput,
+              endTime: endIndex * minuteinput,
               Color: null,
             },
           ],
         };
         setDataToInput(newdataToInput);
-        console.log("start: ", startIndex, ". End: ", endIndex);
       }
     };
 

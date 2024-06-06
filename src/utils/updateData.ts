@@ -26,22 +26,22 @@ export const updateData = (
           dayData = dayData.reduce(
             (updatedDayData, existingBlock) => {
               if (
-                newBlock.StartTime > existingBlock.EndTime ||
-                newBlock.EndTime < existingBlock.StartTime
+                newBlock.startTime > existingBlock.endTime ||
+                newBlock.endTime < existingBlock.startTime
               ) {
                 updatedDayData.push(existingBlock); // No overlap
               } else {
                 // Overlap handling
-                if (newBlock.StartTime > existingBlock.StartTime) {
+                if (newBlock.startTime > existingBlock.startTime) {
                   updatedDayData.push({
                     ...existingBlock,
-                    EndTime: newBlock.StartTime,
+                    endTime: newBlock.startTime,
                   });
                 }
-                if (newBlock.EndTime < existingBlock.EndTime) {
+                if (newBlock.endTime < existingBlock.endTime) {
                   updatedDayData.push({
                     ...existingBlock,
-                    StartTime: newBlock.EndTime,
+                    startTime: newBlock.endTime,
                   });
                 }
               }
@@ -50,8 +50,8 @@ export const updateData = (
             eraseTool ? [] : [newBlock]
           ); // Start with new block if not erasing
 
-          // Sort the day data based on StartTime
-          dayData.sort((a, b) => a.StartTime - b.StartTime);
+          // Sort the day data based on startTime
+          dayData.sort((a, b) => a.startTime - b.startTime);
         });
 
         newData[dayIndex][day] = dayData;

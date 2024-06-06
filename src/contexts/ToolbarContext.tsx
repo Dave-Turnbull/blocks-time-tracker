@@ -1,4 +1,5 @@
 import { createContext, useState } from "react";
+import taskData from "../test/taskData.json";
 
 interface toolbarContextType {
   inputValue: number;
@@ -15,6 +16,8 @@ interface toolbarContextType {
   settaskTitle: React.Dispatch<React.SetStateAction<string>>;
   eraseTool: boolean;
   setEraseTool: React.Dispatch<React.SetStateAction<boolean>>;
+  tasks: object;
+  setTasks: React.Dispatch<React.SetStateAction<object>>;
 }
 
 export const ToolbarContext = createContext<toolbarContextType | null>(null);
@@ -31,6 +34,11 @@ export const ToolbarProvider = ({ children }) => {
   const [pickedColor, setPickedColor] = useState("#000000");
   const [taskTitle, settaskTitle] = useState("");
   const [eraseTool, setEraseTool] = useState(false);
+
+  const [tasks, setTasks] = useState(() => {
+    const savedData = localStorage.getItem("taskData");
+    return savedData ? JSON.parse(savedData) : taskData;
+  });
 
   return (
     <ToolbarContext.Provider
@@ -49,6 +57,8 @@ export const ToolbarProvider = ({ children }) => {
         settaskTitle,
         eraseTool,
         setEraseTool,
+        tasks,
+        setTasks,
       }}
     >
       {children}

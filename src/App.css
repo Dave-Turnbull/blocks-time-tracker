@@ -31,7 +31,7 @@ body {
 }
 
 .timeLabel {
-  font-size: 1.2rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: #00000073;
   margin-left: 5px;
@@ -49,15 +49,15 @@ body {
   position: relative;
 }
 
-.cellsGroup .cell:first-child, .cellsGroup .cell:first-child > .overlay, .cellsGroup .cell:first-child > .partialDataContainer {
+.cellsGroup .cell:first-child, .cellsGroup .cell:first-child > .overlay, .cellsGroup .cell:first-child > .innerCellContainer {
   border-radius: 10px 0 0 10px;
 }
 
-.cellsGroup .cell:last-child, .cellsGroup .cell:last-child > .overlay, .cellsGroup .cell:last-child > .partialDataContainer {
+.cellsGroup .cell:last-child, .cellsGroup .cell:last-child > .overlay, .cellsGroup .cell:last-child > .innerCellContainer {
   border-radius: 0 10px 10px 0;
 }
 
-.partialDataContainer {
+.innerCellContainer {
   position: absolute;
   top: 0;
   left: 0;

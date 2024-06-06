@@ -1,18 +1,18 @@
 {
   "2024-06-05": [
-    { "StartTime": 0, "EndTime": 5, "Color": "#fff000" },
-    { "StartTime": 348, "EndTime": 600, "Color": "#ff0000" },
-    { "StartTime": 960, "EndTime": 1200, "Color": "#00ff00" },
-    { "StartTime": 1200, "EndTime": 1399, "Color": "#0000ff" }
+    { "startTime": 0, "endTime": 5, "taskID": 2 },
+    { "startTime": 348, "endTime": 600, "taskID": 6 },
+    { "startTime": 960, "endTime": 1200, "taskID": 4 },
+    { "startTime": 1200, "endTime": 1399, "taskID": 13 }
   ],
   "2024-06-06": [
-    { "StartTime": 101, "EndTime": 205, "Color": "#ff63db" },
-    { "StartTime": 207, "EndTime": 210, "Color": "#ff98db" },
-    { "StartTime": 420, "EndTime": 600, "Color": "#ffff00" }
+    { "startTime": 101, "endTime": 205, "taskID": 3 },
+    { "startTime": 207, "endTime": 210, "taskID": 10 },
+    { "startTime": 420, "endTime": 600, "taskID": 8 }
   ],
   "2024-06-07": [
-    { "StartTime": 600, "EndTime": 900, "Color": "#ff00ff" },
-    { "StartTime": 1200, "EndTime": 1440, "Color": "#0000ff" },
-    { "StartTime": 900, "EndTime": 950, "Color": "#000000" }
+    { "startTime": 600, "endTime": 900, "taskID": 1 },
+    { "startTime": 1200, "endTime": 1440, "taskID": 5 },
+    { "startTime": 900, "endTime": 950, "taskID": 7 }
   ]
 }
