@@ -1,0 +1,80 @@
+{
+    "1": {
+        "color": "#fff000",
+        "title": "Making Cookies",
+        "description": "baking cookies for gram gram",
+        "category": "cooking"
+    },
+    "2": {
+        "color": "#ff0000",
+        "title": "Eating Cookies",
+        "description": "eating gram gram's cookies",
+        "category": "eating"
+    },
+    "3": {
+        "color": "#ff63db",
+        "title": "Washing Dishes",
+        "description": "washing the dishes after baking and eating cookies",
+        "category": "chores"
+    },
+    "4": {
+        "color": "#00ff00",
+        "title": "Grocery Shopping",
+        "description": "buying ingredients for making more cookies",
+        "category": "errands"
+    },
+    "5": {
+        "color": "#0000ff",
+        "title": "Walking the Dog",
+        "description": "taking the dog for a walk in the park",
+        "category": "exercise"
+    },
+    "6": {
+        "color": "#ff8000",
+        "title": "Reading a Book",
+        "description": "finishing the last chapter of the current book",
+        "category": "leisure"
+    },
+    "7": {
+        "color": "#8a2be2",
+        "title": "Studying for Exam",
+        "description": "reviewing notes for the upcoming exam",
+        "category": "education"
+    },
+    "8": {
+        "color": "#a52a2a",
+        "title": "Cleaning the House",
+        "description": "tidying up the living room and bedrooms",
+        "category": "chores"
+    },
+    "9": {
+        "color": "#ff69b4",
+        "title": "Gardening",
+        "description": "planting new flowers in the garden",
+        "category": "outdoors"
+    },
+    "10": {
+        "color": "#00ced1",
+        "title": "Calling a Friend",
+        "description": "catching up with a friend over the phone",
+        "category": "social"
+    },
+    "11": {
+        "color": "#ff4500",
+        "title": "Writing a Letter",
+        "description": "writing a letter to a pen pal",
+        "category": "communication"
+    },
+    "12": {
+        "color": "#2e8b57",
+        "title": "Yoga Session",
+        "description": "attending a yoga class at the local studio",
+        "category": "exercise"
+    },
+    "13": {
+        "color": "#4682b4",
+        "title": "Watching a Movie",
+        "description": "watching the latest movie release",
+        "category": "entertainment"
+    }
+}
