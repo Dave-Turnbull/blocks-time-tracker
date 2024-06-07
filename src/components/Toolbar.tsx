@@ -73,7 +73,7 @@ export const Toolbar = () => {
   };
 
   return (
-    <div className="innercontainer toolbar">
+    <div className="toolbar">
       {/* <p>Time: {targetTime}</p> */}
       <input
         type="color"

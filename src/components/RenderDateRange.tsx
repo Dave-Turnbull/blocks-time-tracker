@@ -23,5 +23,5 @@ export const RenderDateRange = () => {
     );
   }
 
-  return <div>{renderedDays}</div>;
+  return <div className="cell-render-container">{renderedDays}</div>;
 };
