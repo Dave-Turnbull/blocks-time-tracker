@@ -37,10 +37,7 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
 
             // Generate the time label for this group
             const totalMinutes = groupIndex * cellGroupTotalTime[minuteinput];
-            const hours = String(Math.floor(totalMinutes / 60)).padStart(
-              2,
-              "0"
-            );
+            const hours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
             const minutes = String(totalMinutes % 60).padStart(2, "0");
             const timeLabel = `${hours}:${minutes}`;
 
