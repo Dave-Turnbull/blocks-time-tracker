@@ -1,6 +1,5 @@
 import { useState, useEffect, useContext } from "react";
 import { ActiveCellsContext } from "../contexts/SelectCellsContext.tsx"; // Import the context
-import timesToCells from "../utils/timesToCells.tsx";
 import { Cell } from "./Cell/Cell.tsx";
 import { cellGroupTotalTime } from "../data/cellGroupTotalTime.tsx";
 import { ToolbarContext } from "../contexts/ToolbarContext.tsx";
@@ -8,14 +7,8 @@ import { ToolbarContext } from "../contexts/ToolbarContext.tsx";
 const SingleDay = ({ dayToRender, singleDayData }) => {
   const { activeCells } = useContext(ActiveCellsContext);
   const { minuteinput } = useContext(ToolbarContext);
-  const [cellsData, setCellsData] = useState([]);
 
   const cellsInGroup = cellGroupTotalTime[minuteinput] / minuteinput;
-
-  //Triggers encoding the cells when a day or interval is selected, or the full data changes
-  useEffect(() => {
-    setCellsData(timesToCells(singleDayData, minuteinput));
-  }, [dayToRender, singleDayData, minuteinput]);
 
   //ensures that startIndex is the lowest number and endIndex is highest
   const startIndex = activeCells
@@ -29,18 +22,15 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
     <div key={dayToRender} className="innercontainer" draggable="false">
       <h1 draggable="false">{dayToRender}</h1>
       <div id="cell-container" className="cell-container" draggable="false">
-        {[...Array(Math.ceil(cellsData.length / cellsInGroup))].map(
+        {[...Array(Math.ceil(singleDayData.length / cellsInGroup))].map(
           (_, groupIndex) => {
             const start = groupIndex * cellsInGroup;
             const end = start + cellsInGroup;
-            const groupOfCells = cellsData.slice(start, end);
+            const groupOfCells = singleDayData.slice(start, end);
 
             // Generate the time label for this group
             const totalMinutes = groupIndex * cellGroupTotalTime[minuteinput];
-            const hours = String(Math.floor(totalMinutes / 60)).padStart(
-              2,
-              "0"
-            );
+            const hours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
             const minutes = String(totalMinutes % 60).padStart(2, "0");
             const timeLabel = `${hours}:${minutes}`;
 

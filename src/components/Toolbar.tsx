@@ -13,10 +13,10 @@ export const Toolbar = () => {
     setEndDate,
     pickedColor,
     setPickedColor,
-    taskTitle,
-    settaskTitle,
     eraseTool,
     setEraseTool,
+    selectedTasks,
+    tasks,
   } = useContext(ToolbarContext);
 
   /*===============
@@ -64,15 +64,17 @@ export const Toolbar = () => {
     setEndDate(event.target.value);
   };
 
-  const handletaskTitleChange = (event) => {
-    settaskTitle(event.target.value);
-  };
-
   const handleToggleEraseTool = () => {
     setEraseTool(!eraseTool);
   };
 
   return (
+    <>
+    <div className="tasks">
+      {selectedTasks.tasks && selectedTasks.tasks.map((selectedTask) => {
+        return `${selectedTasks.startTime} ${tasks[selectedTask.taskID].title}`
+      })}
+    </div>
     <div className="toolbar">
       {/* <p>Time: {targetTime}</p> */}
       <input
@@ -80,17 +82,6 @@ export const Toolbar = () => {
         value={pickedColor}
         onChange={(e) => setPickedColor(e.target.value)}
       />
-      <form>
-        {/* ... other input fields ... */}
-        <label>
-          Task Title:
-          <input
-            type="text"
-            value={taskTitle}
-            onChange={handletaskTitleChange}
-          />
-        </label>
-      </form>
       <p>Time per cell: </p>
       <form onSubmit={handleIntervalSubmit}>
         <input
@@ -121,5 +112,6 @@ export const Toolbar = () => {
         </button>
       </div>
     </div>
+    </>
   );
 };

@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import taskData from "../test/taskData.json";
 
 interface toolbarContextType {
@@ -12,12 +12,12 @@ interface toolbarContextType {
   setEndDate: React.Dispatch<React.SetStateAction<string>>;
   pickedColor: string;
   setPickedColor: React.Dispatch<React.SetStateAction<string>>;
-  taskTitle: string;
-  settaskTitle: React.Dispatch<React.SetStateAction<string>>;
   eraseTool: boolean;
   setEraseTool: React.Dispatch<React.SetStateAction<boolean>>;
   tasks: object;
   setTasks: React.Dispatch<React.SetStateAction<object>>;
+  selectedTasks: Array<any>
+  setSelectedTasks: React.Dispatch<React.SetStateAction<Array<any>>>;
 }
 
 export const ToolbarContext = createContext<toolbarContextType | null>(null);
@@ -32,13 +32,17 @@ export const ToolbarProvider = ({ children }) => {
     new Date().toISOString().substring(0, 10)
   );
   const [pickedColor, setPickedColor] = useState("#000000");
-  const [taskTitle, settaskTitle] = useState("");
   const [eraseTool, setEraseTool] = useState(false);
 
   const [tasks, setTasks] = useState(() => {
     const savedData = localStorage.getItem("taskData");
     return savedData ? JSON.parse(savedData) : taskData;
   });
+  const [selectedTasks, setSelectedTasks] = useState([])
+
+  useEffect(() => {
+    console.log(selectedTasks)
+  }, [selectedTasks])
 
   return (
     <ToolbarContext.Provider
@@ -53,12 +57,12 @@ export const ToolbarProvider = ({ children }) => {
         setEndDate,
         pickedColor,
         setPickedColor,
-        taskTitle,
-        settaskTitle,
         eraseTool,
         setEraseTool,
         tasks,
         setTasks,
+        selectedTasks,
+        setSelectedTasks
       }}
     >
       {children}

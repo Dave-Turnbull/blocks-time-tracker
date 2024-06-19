@@ -1,12 +1,9 @@
 import { useContext } from "react";
 import { ToolbarContext } from "../../contexts/ToolbarContext";
-import { ActiveCellsContext } from "../../contexts/SelectCellsContext";
 import { SelectedCellOverlay } from "./components/SelectedCellOverlay";
 
 export const Cell = ({ cellIndex, cell, dayToRender, selected }) => {
   const { pickedColor, eraseTool, tasks } = useContext(ToolbarContext);
-  const { activeCells } = useContext(ActiveCellsContext);
-
   return (
     <div
       id={`cell-${cellIndex}`}
@@ -14,25 +11,24 @@ export const Cell = ({ cellIndex, cell, dayToRender, selected }) => {
       key={cellIndex}
       className="cell"
       data-day={dayToRender}
-      data-time={cell.time} //change
+      data-time={cell.startTime} //change
       data-cell-index={cellIndex}
     >
       {selected && !eraseTool && (
         <SelectedCellOverlay pickedColor={pickedColor} />
       )}
-      {cell.length > 0 && !(selected && eraseTool) && (
+      {cell.tasks.length > 0 && !(selected && eraseTool) && (
         <div className="innerCellContainer">
-          {cell.map((part) => (
-            <div
-              key={part.id}
-              className={"innercell"}
-              style={{
-                ...part.style,
-                backgroundColor: tasks[part.taskID].color,
-              }}
-              data-key={part.id}
-            />
-          ))}
+          {cell.tasks.map((task) => {
+            const cellProps = cell.getCellProps(task, tasks[task.taskID].color)
+            return (
+              <div
+                className={"innercell"}
+                {...cellProps}
+                data-key={task.id}
+              />
+            )
+          })}
         </div>
       )}
     </div>
