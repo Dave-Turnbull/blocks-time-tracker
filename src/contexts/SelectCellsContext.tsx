@@ -19,7 +19,7 @@ export const ActiveCellsContext = createContext<selectCellsContextType | null>(
 );
 
 export const ActiveCellsProvider = ({ children }) => {
-  const { minuteinput, startDate, endDate } = useContext(ToolbarContext);
+  const { minuteinput, startDate, endDate, setSelectedTasks } = useContext(ToolbarContext);
   const [activeCells, setActiveCells] = useState({
     day: null,
     StartCell: null,
@@ -101,6 +101,14 @@ export const ActiveCellsProvider = ({ children }) => {
             StartCell: null,
             EndCell: null,
           });
+        }
+      } else {
+        const target = document.elementFromPoint(e.clientX, e.clientY);
+        const targetDay = target.getAttribute("data-day");
+        const targetCellIndex = target.getAttribute("data-cell-index");
+        if (targetDay && targetCellIndex) {
+          console.log(cellsData[targetDay][targetCellIndex], 'selectedCell')
+          setSelectedTasks(cellsData[targetDay][targetCellIndex])
         }
       }
       if (/^cell-\d+$/.test(e.target.id)) {
