@@ -1,5 +1,7 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import { ToolbarContext } from "./ToolbarContext";
+import timesToCells from "../utils/timesToCells";
+import timesheetData from "../test/timesheet.json";
 
 interface activeCellsType {
   day: null | string;
@@ -9,6 +11,7 @@ interface activeCellsType {
 
 interface selectCellsContextType {
   activeCells: activeCellsType;
+  cellsData: Object
 }
 
 export const ActiveCellsContext = createContext<selectCellsContextType | null>(
@@ -16,7 +19,7 @@ export const ActiveCellsContext = createContext<selectCellsContextType | null>(
 );
 
 export const ActiveCellsProvider = ({ children }) => {
-  const { minuteinput } = useContext(ToolbarContext);
+  const { minuteinput, startDate, endDate } = useContext(ToolbarContext);
   const [activeCells, setActiveCells] = useState({
     day: null,
     StartCell: null,
@@ -24,6 +27,30 @@ export const ActiveCellsProvider = ({ children }) => {
   });
   const [dataToInput, setDataToInput] = useState(null);
   const [targetTime, setTargetTime] = useState(0);
+
+  const [FullRawData, setFullRawData] = useState(() => {
+    const savedData = localStorage.getItem("timesheetData");
+    return savedData ? JSON.parse(savedData) : timesheetData;
+  });
+
+
+  const convertRawDataToCellObjects = () => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const cellObjectData = {}
+    for (let day = start; day <= end; day.setDate(day.getDate() + 1)) {
+      const dayString = day.toISOString().substring(0, 10)
+      cellObjectData[dayString] = timesToCells(FullRawData[dayString], minuteinput)
+    }
+    console.log(cellObjectData, 'cell object data')
+    return cellObjectData
+  }
+  const [cellsData, setCellsData] = useState(convertRawDataToCellObjects());
+  
+  //Triggers encoding the cells when a day or interval is selected, or the full data changes
+  useEffect(() => {
+    setCellsData(convertRawDataToCellObjects())
+  }, [startDate, endDate, FullRawData, minuteinput]);
 
   //trigger the functions when the mouse events are started
   useEffect(() => {
@@ -121,7 +148,7 @@ export const ActiveCellsProvider = ({ children }) => {
   });
 
   return (
-    <ActiveCellsContext.Provider value={{ activeCells }}>
+    <ActiveCellsContext.Provider value={{ activeCells, cellsData }}>
       {children}
     </ActiveCellsContext.Provider>
   );

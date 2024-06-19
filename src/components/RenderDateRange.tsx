@@ -1,24 +1,22 @@
 import { useContext, useState } from "react";
 import SingleDay from "./SingleDay";
 import { ToolbarContext } from "../contexts/ToolbarContext";
-import timesheetData from "../test/timesheet.json";
+import { ActiveCellsContext } from "../contexts/SelectCellsContext";
 
 export const RenderDateRange = () => {
   const { startDate, endDate } = useContext(ToolbarContext);
-  const [FullData, setFullData] = useState(() => {
-    const savedData = localStorage.getItem("timesheetData");
-    return savedData ? JSON.parse(savedData) : timesheetData;
-  });
+  const { cellsData } = useContext(ActiveCellsContext);
+  
   const start = new Date(startDate);
   const end = new Date(endDate);
   const renderedDays = [];
+  console.log(cellsData)
 
-  for (let day = start; day <= end; day.setDate(day.getDate() + 1)) {
-    const dayToRender = day.toISOString().substring(0, 10);
+  for (let key in cellsData) {
     renderedDays.push(
       <SingleDay
-        dayToRender={dayToRender}
-        singleDayData={FullData[dayToRender]}
+        dayToRender={key}
+        singleDayData={cellsData[key]}
       />
     );
   }
