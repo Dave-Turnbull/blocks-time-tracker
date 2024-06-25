@@ -40,10 +40,6 @@ export const ToolbarProvider = ({ children }) => {
   });
   const [selectedTasks, setSelectedTasks] = useState([])
 
-  useEffect(() => {
-    console.log(selectedTasks)
-  }, [selectedTasks])
-
   return (
     <ToolbarContext.Provider
       value={{

@@ -42,7 +42,6 @@ export const ActiveCellsProvider = ({ children }) => {
       const dayString = day.toISOString().substring(0, 10)
       cellObjectData[dayString] = timesToCells(FullRawData[dayString], minuteinput)
     }
-    console.log(cellObjectData, 'cell object data')
     return cellObjectData
   }
   const [cellsData, setCellsData] = useState(convertRawDataToCellObjects());
@@ -82,8 +81,8 @@ export const ActiveCellsProvider = ({ children }) => {
         const mouseRolloutCheck = [
           "timeLabel",
           "cell-container",
-          "groupContainer",
-          "cellsGroup",
+          "cell-group-container",
+          "cell-group",
           "innercontainer",
         ];
         if (targetDay && targetCellIndex && targetDay === activeCells.day) {
@@ -107,7 +106,6 @@ export const ActiveCellsProvider = ({ children }) => {
         const targetDay = target.getAttribute("data-day");
         const targetCellIndex = target.getAttribute("data-cell-index");
         if (targetDay && targetCellIndex) {
-          console.log(cellsData[targetDay][targetCellIndex], 'selectedCell')
           setSelectedTasks(cellsData[targetDay][targetCellIndex])
         }
       }

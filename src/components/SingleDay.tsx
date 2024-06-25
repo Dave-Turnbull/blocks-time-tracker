@@ -3,6 +3,7 @@ import { ActiveCellsContext } from "../contexts/SelectCellsContext.tsx"; // Impo
 import { Cell } from "./Cell/Cell.tsx";
 import { cellGroupTotalTime } from "../data/cellGroupTotalTime.tsx";
 import { ToolbarContext } from "../contexts/ToolbarContext.tsx";
+import styled from "styled-components";
 
 const SingleDay = ({ dayToRender, singleDayData }) => {
   const { activeCells } = useContext(ActiveCellsContext);
@@ -19,9 +20,9 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
     : null;
 
   return (
-    <div key={dayToRender} className="innercontainer" draggable="false">
+    <SingleDayWrapper key={dayToRender} className="innercontainer" draggable="false">
       <h1 draggable="false">{dayToRender}</h1>
-      <div id="cell-container" className="cell-container" draggable="false">
+      <CellContainer id="cell-container" className="cell-container" draggable="false">
         {[...Array(Math.ceil(singleDayData.length / cellsInGroup))].map(
           (_, groupIndex) => {
             const start = groupIndex * cellsInGroup;
@@ -35,8 +36,8 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
             const timeLabel = `${hours}:${minutes}`;
 
             return (
-              <div key={groupIndex} className="groupContainer">
-                <div className="cellsGroup">
+              <CellGroupContainer key={groupIndex} className="cell-group-container">
+                <CellGroup className="cell-group">
                   {groupOfCells.map((cell, index) => {
                     const cellIndex = index + start;
                     const isSelected =
@@ -44,24 +45,63 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
                       dayToRender === activeCells.day &&
                       cellIndex >= startIndex &&
                       cellIndex <= endIndex;
+                    const groupPosition = index === 0 ? 'start' : index === cellsInGroup -1 ? 'end' : 'middle'
                     return (
                       <Cell
                         cellIndex={cellIndex}
                         cell={cell}
                         dayToRender={dayToRender}
                         selected={isSelected}
+                        groupPosition={groupPosition}
                       />
                     );
                   })}
-                </div>
-                <div className="timeLabel">{timeLabel}</div>
-              </div>
+                </CellGroup>
+                <TimeLabel className="timeLabel">{timeLabel}</TimeLabel>
+              </CellGroupContainer>
             );
           }
         )}
-      </div>
-    </div>
+      </CellContainer>
+    </SingleDayWrapper>
   );
 };
+
+const SingleDayWrapper = styled.div`
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 30px;
+  background-color: #dedede25;
+`
+
+const CellContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`
+
+const CellGroupContainer = styled.div`
+  margin: 1px;
+`
+
+const CellGroup = styled.div`
+  display: flex;
+  flex-wrap: nowrap;
+  border: 3px;
+  padding: 1px 2px;
+  margin: 0 -2px;
+  border-style: solid;
+  border-color: #cf2e27;
+  position: relative;
+  border-radius: 12px;
+`
+
+const TimeLabel = styled.p`
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #00000073;
+  margin: 0;
+  padding: 0;
+  margin-left: 5px;
+`
 
 export default SingleDay;
