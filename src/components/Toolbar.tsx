@@ -16,7 +16,6 @@ export const Toolbar = () => {
     setPickedColor,
     eraseTool,
     setEraseTool,
-    selectedTasks,
     tasks,
   } = useContext(ToolbarContext);
 
@@ -70,12 +69,6 @@ export const Toolbar = () => {
   };
 
   return (
-    <>
-    <div className="tasks">
-      {selectedTasks.tasks && selectedTasks.tasks.map((selectedTask) => {
-        return `${selectedTasks.startTime} ${tasks[selectedTask.taskID].title}`
-      })}
-    </div>
     <ToolbarWrapper>
       {/* <p>Time: {targetTime}</p> */}
       <input
@@ -113,13 +106,11 @@ export const Toolbar = () => {
         </button>
       </div>
     </ToolbarWrapper>
-    </>
   );
 };
 
 const ToolbarWrapper = styled.menu`
   position: relative;
-  bottom: 0;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -127,5 +118,6 @@ const ToolbarWrapper = styled.menu`
   background-color: #f8f9fa;
   padding: 0 1em;
   z-index: 100;
-  height: 10vh;
+  margin: 0;
+  margin-top: auto;
 `

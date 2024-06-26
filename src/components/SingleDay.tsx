@@ -4,6 +4,7 @@ import { Cell } from "./Cell/Cell.tsx";
 import { cellGroupTotalTime } from "../data/cellGroupTotalTime.tsx";
 import { ToolbarContext } from "../contexts/ToolbarContext.tsx";
 import styled from "styled-components";
+import { readableDate } from "../utils/utils.ts";
 
 const SingleDay = ({ dayToRender, singleDayData }) => {
   const { activeCells } = useContext(ActiveCellsContext);
@@ -21,7 +22,7 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
 
   return (
     <SingleDayWrapper key={dayToRender} className="innercontainer" draggable="false">
-      <h1 draggable="false">{dayToRender}</h1>
+      <h2 draggable="false">{readableDate(dayToRender)}</h2>
       <CellContainer id="cell-container" className="cell-container" draggable="false">
         {[...Array(Math.ceil(singleDayData.length / cellsInGroup))].map(
           (_, groupIndex) => {
@@ -69,9 +70,6 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
 
 const SingleDayWrapper = styled.div`
   max-width: 1200px;
-  margin: 20px auto;
-  padding: 30px;
-  background-color: #dedede25;
 `
 
 const CellContainer = styled.div`

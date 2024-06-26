@@ -11,7 +11,9 @@ interface activeCellsType {
 
 interface selectCellsContextType {
   activeCells: activeCellsType;
-  cellsData: Object
+  cellsData: Object;
+  mouseOverTasks: Array<any>
+  setMouseOverTasks?: React.Dispatch<React.SetStateAction<Array<any>>>;
 }
 
 export const ActiveCellsContext = createContext<selectCellsContextType | null>(
@@ -19,7 +21,7 @@ export const ActiveCellsContext = createContext<selectCellsContextType | null>(
 );
 
 export const ActiveCellsProvider = ({ children }) => {
-  const { minuteinput, startDate, endDate, setSelectedTasks } = useContext(ToolbarContext);
+  const { minuteinput, startDate, endDate } = useContext(ToolbarContext);
   const [activeCells, setActiveCells] = useState({
     day: null,
     StartCell: null,
@@ -32,6 +34,7 @@ export const ActiveCellsProvider = ({ children }) => {
     const savedData = localStorage.getItem("timesheetData");
     return savedData ? JSON.parse(savedData) : timesheetData;
   });
+  const [mouseOverTasks, setMouseOverTasks] = useState([])
 
 
   const convertRawDataToCellObjects = () => {
@@ -106,7 +109,7 @@ export const ActiveCellsProvider = ({ children }) => {
         const targetDay = target.getAttribute("data-day");
         const targetCellIndex = target.getAttribute("data-cell-index");
         if (targetDay && targetCellIndex) {
-          setSelectedTasks(cellsData[targetDay][targetCellIndex])
+          setMouseOverTasks(cellsData[targetDay][targetCellIndex])
         }
       }
       if (/^cell-\d+$/.test(e.target.id)) {
@@ -154,7 +157,7 @@ export const ActiveCellsProvider = ({ children }) => {
   });
 
   return (
-    <ActiveCellsContext.Provider value={{ activeCells, cellsData }}>
+    <ActiveCellsContext.Provider value={{ activeCells, cellsData, mouseOverTasks }}>
       {children}
     </ActiveCellsContext.Provider>
   );
