@@ -4,7 +4,7 @@ import { Cell } from "./Cell/Cell.tsx";
 import { cellGroupTotalTime } from "../data/cellGroupTotalTime.tsx";
 import { ToolbarContext } from "../contexts/ToolbarContext.tsx";
 import styled from "styled-components";
-import { readableDate } from "../utils/utils.ts";
+import { readableDate, readableTime } from "../utils/utils.ts";
 
 const SingleDay = ({ dayToRender, singleDayData }) => {
   const { activeCells } = useContext(ActiveCellsContext);
@@ -32,9 +32,6 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
 
             // Generate the time label for this group
             const totalMinutes = groupIndex * cellGroupTotalTime[minuteinput];
-            const hours = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
-            const minutes = String(totalMinutes % 60).padStart(2, "0");
-            const timeLabel = `${hours}:${minutes}`;
 
             return (
               <CellGroupContainer key={groupIndex} className="cell-group-container">
@@ -58,7 +55,7 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
                     );
                   })}
                 </CellGroup>
-                <TimeLabel className="timeLabel">{timeLabel}</TimeLabel>
+                <TimeLabel className="timeLabel">{readableTime(totalMinutes)}</TimeLabel>
               </CellGroupContainer>
             );
           }

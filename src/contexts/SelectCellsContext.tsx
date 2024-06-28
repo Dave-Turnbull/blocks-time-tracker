@@ -14,6 +14,7 @@ interface selectCellsContextType {
   cellsData: Object;
   mouseOverTasks: Array<any>
   setMouseOverTasks?: React.Dispatch<React.SetStateAction<Array<any>>>;
+  currentTimeData: Object;
 }
 
 export const ActiveCellsContext = createContext<selectCellsContextType | null>(
@@ -34,25 +35,23 @@ export const ActiveCellsProvider = ({ children }) => {
     const savedData = localStorage.getItem("timesheetData");
     return savedData ? JSON.parse(savedData) : timesheetData;
   });
+  const [currentTimeData, setCurrentTimeData] = useState({})
   const [mouseOverTasks, setMouseOverTasks] = useState([])
+  const [cellsData, setCellsData] = useState({});
 
-
-  const convertRawDataToCellObjects = () => {
+  useEffect(() => {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const cellObjectData = {}
+    const rawData = {}
     for (let day = start; day <= end; day.setDate(day.getDate() + 1)) {
       const dayString = day.toISOString().substring(0, 10)
+      rawData[dayString] = FullRawData[dayString]
       cellObjectData[dayString] = timesToCells(FullRawData[dayString], minuteinput)
     }
-    return cellObjectData
-  }
-  const [cellsData, setCellsData] = useState(convertRawDataToCellObjects());
-  
-  //Triggers encoding the cells when a day or interval is selected, or the full data changes
-  useEffect(() => {
-    setCellsData(convertRawDataToCellObjects())
-  }, [startDate, endDate, FullRawData, minuteinput]);
+    setCurrentTimeData(rawData)
+    setCellsData(cellObjectData)
+  }, [startDate, endDate, FullRawData, minuteinput])
 
   //trigger the functions when the mouse events are started
   useEffect(() => {
@@ -157,7 +156,7 @@ export const ActiveCellsProvider = ({ children }) => {
   });
 
   return (
-    <ActiveCellsContext.Provider value={{ activeCells, cellsData, mouseOverTasks }}>
+    <ActiveCellsContext.Provider value={{ activeCells, cellsData, mouseOverTasks, currentTimeData }}>
       {children}
     </ActiveCellsContext.Provider>
   );
