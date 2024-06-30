@@ -6,7 +6,7 @@ import { ToolbarContext } from "../contexts/ToolbarContext.tsx";
 import styled from "styled-components";
 import { readableDate, readableTime } from "../utils/utils.ts";
 
-const SingleDay = ({ dayToRender, singleDayData }) => {
+const SingleDay = memo(({ dayToRender, singleDayData }) => {
   const { activeCells } = useContext(ActiveCellsContext);
   const { minuteinput } = useContext(ToolbarContext);
 
@@ -63,7 +63,7 @@ const SingleDay = ({ dayToRender, singleDayData }) => {
       </CellContainer>
     </SingleDayWrapper>
   );
-};
+});
 
 const SingleDayWrapper = styled.div`
   max-width: 1200px;

@@ -2,6 +2,7 @@ import { useContext } from "react"
 import { ActiveCellsContext } from "../contexts/SelectCellsContext"
 import { ToolbarContext } from "../contexts/ToolbarContext"
 import { readableTime } from "../utils/utils"
+import styled from "styled-components"
 
 const TaskList = ({singleDayDataOnScroll}) => {
     const {mouseOverTasks, currentTimeData} = useContext(ActiveCellsContext)
@@ -11,12 +12,19 @@ const TaskList = ({singleDayDataOnScroll}) => {
     return (
         <div>
             <h2>Tasks - {singleDayDataOnScroll}</h2>
-            <ul className="tasks">
+            <StyledUl className="tasks">
             {mouseOverTasks.tasks && mouseOverTasks.tasks.map((mouseOverTask) => {
-                return <li>{`${mouseOverTask.startTime} ${tasks[mouseOverTask.taskID].title}`}</li>
+                const startTime = mouseOverTasks.startTime + mouseOverTask.startTime
+                const endTime = mouseOverTasks.startTime + mouseOverTask.endTime
+                return (
+                    <li>
+                        <p>{tasks[mouseOverTask.taskID].title}</p>
+                        <p>{`${readableTime(startTime)} - ${readableTime(endTime)}`}</p>
+                    </li>
+                )
             })}
-            </ul>
-            <ul>
+            </StyledUl>
+            <StyledUl>
                 {singleDayDataOnScroll && currentTimeData[singleDayDataOnScroll] && currentTimeData[singleDayDataOnScroll].map((time) => {
                     return (
                         <li>
@@ -25,9 +33,14 @@ const TaskList = ({singleDayDataOnScroll}) => {
                         </li>
                     )
                 })}
-            </ul>
+            </StyledUl>
         </div>
     )
 }
+
+const StyledUl = styled.ul`
+    list-style: none;
+    padding: 0;
+`
 
 export default TaskList

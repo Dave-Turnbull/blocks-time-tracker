@@ -21,14 +21,14 @@ export const RenderDateRange = () => {
         const focusedDay = dayComponentRefArray.current
           .map((dayComponent) => dayComponent)
           .find((dayElement) => dayElement.getBoundingClientRect().top < 20 && dayElement.getBoundingClientRect().top + dayElement.getBoundingClientRect().height > 20)
-        if (focusedDay) {
+        if (focusedDay && focusedDay.dataset.date !== currentFocusedDay) {
           const focusedDate = focusedDay.dataset.date
           setCurrentFocusedDay(focusedDate)
         }
     }
 
     if (cellsWrapperRef && cellsWrapperRef.current) {
-      cellsWrapperRef.current.addEventListener("scroll", updateScrollPosition, false);
+      cellsWrapperRef.current.addEventListener("scroll", updateScrollPosition, false);//this needs debouncing
     }
     return () => {
       if (cellsWrapperRef && cellsWrapperRef.current) {
