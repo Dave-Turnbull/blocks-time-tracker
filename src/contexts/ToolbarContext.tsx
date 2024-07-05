@@ -16,8 +16,6 @@ interface toolbarContextType {
   setEraseTool: React.Dispatch<React.SetStateAction<boolean>>;
   tasks: object;
   setTasks: React.Dispatch<React.SetStateAction<object>>;
-  selectedTasks: Array<any>
-  setSelectedTasks: React.Dispatch<React.SetStateAction<Array<any>>>;
 }
 
 export const ToolbarContext = createContext<toolbarContextType | null>(null);
@@ -38,11 +36,6 @@ export const ToolbarProvider = ({ children }) => {
     const savedData = localStorage.getItem("taskData");
     return savedData ? JSON.parse(savedData) : taskData;
   });
-  const [selectedTasks, setSelectedTasks] = useState([])
-
-  useEffect(() => {
-    console.log(selectedTasks)
-  }, [selectedTasks])
 
   return (
     <ToolbarContext.Provider
@@ -60,9 +53,7 @@ export const ToolbarProvider = ({ children }) => {
         eraseTool,
         setEraseTool,
         tasks,
-        setTasks,
-        selectedTasks,
-        setSelectedTasks
+        setTasks
       }}
     >
       {children}

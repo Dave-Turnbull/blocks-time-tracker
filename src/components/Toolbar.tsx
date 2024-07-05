@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { ToolbarContext } from "../contexts/ToolbarContext";
+import styled from "styled-components";
 
 export const Toolbar = () => {
   const {
@@ -15,7 +16,6 @@ export const Toolbar = () => {
     setPickedColor,
     eraseTool,
     setEraseTool,
-    selectedTasks,
     tasks,
   } = useContext(ToolbarContext);
 
@@ -69,13 +69,7 @@ export const Toolbar = () => {
   };
 
   return (
-    <>
-    <div className="tasks">
-      {selectedTasks.tasks && selectedTasks.tasks.map((selectedTask) => {
-        return `${selectedTasks.startTime} ${tasks[selectedTask.taskID].title}`
-      })}
-    </div>
-    <div className="toolbar">
+    <ToolbarWrapper>
       {/* <p>Time: {targetTime}</p> */}
       <input
         type="color"
@@ -111,7 +105,19 @@ export const Toolbar = () => {
           {eraseTool ? "Disable Erase Tool" : "Enable Erase Tool"}
         </button>
       </div>
-    </div>
-    </>
+    </ToolbarWrapper>
   );
 };
+
+const ToolbarWrapper = styled.menu`
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f9fa;
+  padding: 0 1em;
+  z-index: 100;
+  margin: 0;
+  margin-top: auto;
+`
