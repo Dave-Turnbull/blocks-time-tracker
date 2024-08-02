@@ -1,9 +1,10 @@
+import { memo } from "react";
 import { useContext } from "react";
 import { ToolbarContext } from "../../contexts/ToolbarContext";
 import { SelectedCellOverlay } from "./components/SelectedCellOverlay";
 import styled from "styled-components";
 
-export const Cell = ({ cellIndex, cell, dayToRender, selected, groupPosition = null }) => {
+export const Cell = memo(({ cellIndex, cell, dayToRender, selected, groupPosition = null }) => {
   const { pickedColor, eraseTool, tasks } = useContext(ToolbarContext);
   return (
     <CellContainer
@@ -33,7 +34,7 @@ export const Cell = ({ cellIndex, cell, dayToRender, selected, groupPosition = n
       )}
     </CellContainer>
   );
-};
+});
 
 const CellContainer = styled.div<{groupPosition: string}>`
   width: 40px;

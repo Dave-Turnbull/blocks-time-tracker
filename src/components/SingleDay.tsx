@@ -1,23 +1,18 @@
-import { useState, useEffect, useContext, memo } from "react";
-import { ActiveCellsContext } from "../contexts/SelectCellsContext.tsx"; // Import the context
+import { memo } from "react";
 import { Cell } from "./Cell/Cell.tsx";
 import { cellGroupTotalTime } from "../data/cellGroupTotalTime.tsx";
-import { ToolbarContext } from "../contexts/ToolbarContext.tsx";
 import styled from "styled-components";
 import { readableDate, readableTime } from "../utils/utils.ts";
 
-const SingleDay = memo(({ dayToRender, singleDayData }) => {
-  const { activeCells } = useContext(ActiveCellsContext);
-  const { minuteinput } = useContext(ToolbarContext);
-
+const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput }) => {
   const cellsInGroup = cellGroupTotalTime[minuteinput] / minuteinput;
 
   //ensures that startIndex is the lowest number and endIndex is highest
-  const startIndex = activeCells
-    ? Math.min(activeCells.StartCell, activeCells.EndCell)
+  const startIndex = selectedCells
+    ? Math.min(selectedCells.StartCell, selectedCells.EndCell)
     : null;
-  const endIndex = activeCells
-    ? Math.max(activeCells.StartCell, activeCells.EndCell)
+  const endIndex = selectedCells
+    ? Math.max(selectedCells.StartCell, selectedCells.EndCell)
     : null;
 
   return (
@@ -39,13 +34,14 @@ const SingleDay = memo(({ dayToRender, singleDayData }) => {
                   {groupOfCells.map((cell, index) => {
                     const cellIndex = index + start;
                     const isSelected =
-                      activeCells &&
-                      dayToRender === activeCells.day &&
+                      selectedCells &&
+                      dayToRender === selectedCells.day &&
                       cellIndex >= startIndex &&
                       cellIndex <= endIndex;
                     const groupPosition = index === 0 ? 'start' : index === cellsInGroup -1 ? 'end' : 'middle'
                     return (
                       <Cell
+                        key={cellIndex}
                         cellIndex={cellIndex}
                         cell={cell}
                         dayToRender={dayToRender}

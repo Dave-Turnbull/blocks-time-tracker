@@ -1,5 +1,5 @@
 import "./App.css";
-import { ActiveCellsProvider } from "./contexts/SelectCellsContext";
+import { SelectedCellsProvider } from "./contexts/SelectCellsContext";
 import { Toolbar } from "./components/Toolbar";
 import { ToolbarProvider } from "./contexts/ToolbarContext";
 import { RenderDateRange } from "./components/RenderDateRange";
@@ -10,9 +10,9 @@ const App = () => {
   return (
     <Main draggable="false">
       <ToolbarProvider>
-        <ActiveCellsProvider>
+        <SelectedCellsProvider>
           <RenderDateRange />
-        </ActiveCellsProvider>
+        </SelectedCellsProvider>
         <Toolbar />
       </ToolbarProvider>
     </Main>

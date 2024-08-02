@@ -3,27 +3,27 @@ import { ToolbarContext } from "./ToolbarContext";
 import timesToCells from "../utils/timesToCells";
 import timesheetData from "../test/timesheet.json";
 
-interface activeCellsType {
+interface selectedCellsType {
   day: null | string;
   StartCell: null | number;
   EndCell: null | number;
 }
 
 interface selectCellsContextType {
-  activeCells: activeCellsType;
+  selectedCells: selectedCellsType;
   cellsData: Object;
   mouseOverTasks: Array<any>
   setMouseOverTasks?: React.Dispatch<React.SetStateAction<Array<any>>>;
   currentTimeData: Object;
 }
 
-export const ActiveCellsContext = createContext<selectCellsContextType | null>(
+export const SelectedCellsContext = createContext<selectCellsContextType | null>(
   null
 );
 
-export const ActiveCellsProvider = ({ children }) => {
+export const SelectedCellsProvider = ({ children }) => {
   const { minuteinput, startDate, endDate } = useContext(ToolbarContext);
-  const [activeCells, setActiveCells] = useState({
+  const [selectedCells, setSelectedCells] = useState({
     day: null,
     StartCell: null,
     EndCell: null,
@@ -60,13 +60,13 @@ export const ActiveCellsProvider = ({ children }) => {
       const targetCellIndex = e.target.getAttribute("data-cell-index");
       if (targetDay && targetCellIndex) {
         e.preventDefault();
-        setActiveCells({
+        setSelectedCells({
           day: targetDay,
           StartCell: targetCellIndex,
           EndCell: targetCellIndex,
         });
       } else {
-        setActiveCells({
+        setSelectedCells({
           day: null,
           StartCell: null,
           EndCell: null,
@@ -87,8 +87,8 @@ export const ActiveCellsProvider = ({ children }) => {
           "cell-group",
           "innercontainer",
         ];
-        if (targetDay && targetCellIndex && targetDay === activeCells.day) {
-          setActiveCells((prevState) => ({
+        if (targetDay && targetCellIndex && targetDay === selectedCells.day) {
+          setSelectedCells((prevState) => ({
             ...prevState,
             EndCell: targetCellIndex,
           }));
@@ -97,7 +97,7 @@ export const ActiveCellsProvider = ({ children }) => {
             target.classList.contains(className)
           )
         ) {
-          setActiveCells({
+          setSelectedCells({
             day: null,
             StartCell: null,
             EndCell: null,
@@ -122,18 +122,18 @@ export const ActiveCellsProvider = ({ children }) => {
     };
 
     const handleMouseUp = () => {
-      if (activeCells.day && activeCells.StartCell && activeCells.EndCell) {
+      if (selectedCells.day && selectedCells.StartCell && selectedCells.EndCell) {
         //reset the active cells
-        const startIndex = activeCells
-          ? Math.min(activeCells.StartCell, activeCells.EndCell)
+        const startIndex = selectedCells
+          ? Math.min(selectedCells.StartCell, selectedCells.EndCell)
           : null;
         const endIndex =
-          (activeCells
-            ? Math.max(activeCells.StartCell, activeCells.EndCell)
+          (selectedCells
+            ? Math.max(selectedCells.StartCell, selectedCells.EndCell)
             : null) + 1;
         //add the inputed time to the active time array
         const newdataToInput = {
-          [activeCells.day]: [
+          [selectedCells.day]: [
             {
               startTime: startIndex * minuteinput,
               endTime: endIndex * minuteinput,
@@ -156,8 +156,8 @@ export const ActiveCellsProvider = ({ children }) => {
   });
 
   return (
-    <ActiveCellsContext.Provider value={{ activeCells, cellsData, mouseOverTasks, currentTimeData }}>
+    <SelectedCellsContext.Provider value={{ selectedCells, cellsData, mouseOverTasks, currentTimeData }}>
       {children}
-    </ActiveCellsContext.Provider>
+    </SelectedCellsContext.Provider>
   );
 };
