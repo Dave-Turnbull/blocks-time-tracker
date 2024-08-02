@@ -1,13 +1,12 @@
 import { useContext } from "react"
-import { ActiveCellsContext } from "../contexts/SelectCellsContext"
+import { SelectedCellsContext } from "../contexts/SelectCellsContext"
 import { ToolbarContext } from "../contexts/ToolbarContext"
 import { readableTime } from "../utils/utils"
 import styled from "styled-components"
 
 const TaskList = ({singleDayDataOnScroll}) => {
-    const {mouseOverTasks, currentTimeData} = useContext(ActiveCellsContext)
+    const {mouseOverTasks, currentTimeData} = useContext(SelectedCellsContext)
     const {tasks} = useContext(ToolbarContext)
-    console.log(currentTimeData)
 
     return (
         <div>

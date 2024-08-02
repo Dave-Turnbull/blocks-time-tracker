@@ -1,11 +1,13 @@
 import { useContext, useRef, useEffect, useState } from "react";
 import SingleDay from "./SingleDay";
-import { ActiveCellsContext } from "../contexts/SelectCellsContext";
+import { SelectedCellsContext } from "../contexts/SelectCellsContext";
 import styled from "styled-components";
 import TaskList from "./TaskList";
+import { ToolbarContext } from "../contexts/ToolbarContext";
 
 export const RenderDateRange = () => {
-  const { cellsData } = useContext(ActiveCellsContext);
+  const { cellsData, selectedCells } = useContext(SelectedCellsContext);
+  const { minuteinput } = useContext(ToolbarContext);
   const [currentFocusedDay, setCurrentFocusedDay] = useState('')
   const cellsWrapperRef = useRef()
   const dayComponentRefArray = useRef([])
@@ -46,6 +48,8 @@ export const RenderDateRange = () => {
               <SingleDay
                 dayToRender={key}
                 singleDayData={cellsData[key]}
+                selectedCells={selectedCells.day === key ? selectedCells : undefined}
+                minuteinput={minuteinput}
               />
             </div>
           )
