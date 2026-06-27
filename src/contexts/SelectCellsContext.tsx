@@ -1,83 +1,89 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import { ToolbarContext } from "./ToolbarContext";
-import timesToCells from "../utils/timesToCells";
+import timesToCells, { CellObject } from "../utils/timesToCells";
 import timesheetData from "../test/timesheet.json";
 
-interface selectedCellsType {
-  day: null | string;
-  StartCell: null | number;
-  EndCell: null | number;
+interface SelectedCellsType {
+  day: string | null;
+  StartCell: number | null;
+  EndCell: number | null;
 }
 
-interface selectCellsContextType {
-  selectedCells: selectedCellsType;
-  cellsData: Object;
-  mouseOverTasks: Array<any>
-  setMouseOverTasks?: React.Dispatch<React.SetStateAction<Array<any>>>;
-  currentTimeData: Object;
+interface TimeEntry {
+  startTime: number;
+  endTime: number;
+  taskID: string;
 }
 
-export const SelectedCellsContext = createContext<selectCellsContextType | null>(
-  null
-);
+interface SelectCellsContextType {
+  selectedCells: SelectedCellsType;
+  cellsData: Record<string, CellObject[]>;
+  mouseOverTasks: CellObject;
+  currentTimeData: Record<string, TimeEntry[]>;
+}
 
-export const SelectedCellsProvider = ({ children }) => {
+const emptyCellObject = new CellObject(0, 0);
+
+export const SelectedCellsContext = createContext<SelectCellsContextType>({
+  selectedCells: { day: null, StartCell: null, EndCell: null },
+  cellsData: {},
+  mouseOverTasks: emptyCellObject,
+  currentTimeData: {},
+});
+
+export const SelectedCellsProvider = ({ children }: { children: React.ReactNode }) => {
   const { minuteinput, startDate, endDate } = useContext(ToolbarContext);
-  const [selectedCells, setSelectedCells] = useState({
+  const [selectedCells, setSelectedCells] = useState<SelectedCellsType>({
     day: null,
     StartCell: null,
     EndCell: null,
   });
-  const [dataToInput, setDataToInput] = useState(null);
-  const [targetTime, setTargetTime] = useState(0);
+  const [_dataToInput, setDataToInput] = useState<object | null>(null);
+  const [targetTime, setTargetTime] = useState<string | null>(null);
 
-  const [FullRawData, setFullRawData] = useState(() => {
+  const [FullRawData] = useState<Record<string, TimeEntry[]>>(() => {
     const savedData = localStorage.getItem("timesheetData");
     return savedData ? JSON.parse(savedData) : timesheetData;
   });
-  const [currentTimeData, setCurrentTimeData] = useState({})
-  const [mouseOverTasks, setMouseOverTasks] = useState([])
-  const [cellsData, setCellsData] = useState({});
+  const [currentTimeData, setCurrentTimeData] = useState<Record<string, TimeEntry[]>>({});
+  const [mouseOverTasks, setMouseOverTasks] = useState<CellObject>(emptyCellObject);
+  const [cellsData, setCellsData] = useState<Record<string, CellObject[]>>({});
 
   useEffect(() => {
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const cellObjectData = {}
-    const rawData = {}
+    const cellObjectData: Record<string, CellObject[]> = {};
+    const rawData: Record<string, TimeEntry[]> = {};
     for (let day = start; day <= end; day.setDate(day.getDate() + 1)) {
-      const dayString = day.toISOString().substring(0, 10)
-      rawData[dayString] = FullRawData[dayString]
-      cellObjectData[dayString] = timesToCells(FullRawData[dayString], minuteinput)
+      const dayString = day.toISOString().substring(0, 10);
+      rawData[dayString] = FullRawData[dayString];
+      cellObjectData[dayString] = timesToCells(FullRawData[dayString], minuteinput);
     }
-    setCurrentTimeData(rawData)
-    setCellsData(cellObjectData)
-  }, [startDate, endDate, FullRawData, minuteinput])
+    setCurrentTimeData(rawData);
+    setCellsData(cellObjectData);
+  }, [startDate, endDate, FullRawData, minuteinput]);
 
-  //trigger the functions when the mouse events are started
   useEffect(() => {
-    const handleMouseDown = (e) => {
-      const targetDay = e.target.getAttribute("data-day");
-      const targetCellIndex = e.target.getAttribute("data-cell-index");
+    const handleMouseDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const targetDay = target.getAttribute("data-day");
+      const targetCellIndex = target.getAttribute("data-cell-index");
       if (targetDay && targetCellIndex) {
         e.preventDefault();
         setSelectedCells({
           day: targetDay,
-          StartCell: targetCellIndex,
-          EndCell: targetCellIndex,
+          StartCell: Number(targetCellIndex),
+          EndCell: Number(targetCellIndex),
         });
       } else {
-        setSelectedCells({
-          day: null,
-          StartCell: null,
-          EndCell: null,
-        });
+        setSelectedCells({ day: null, StartCell: null, EndCell: null });
       }
     };
 
-    const handleMouseMove = (e) => {
-      if (e.buttons === 1 && e) {
-        // Get the element currently under the mouse pointer
-        const target = document.elementFromPoint(e.clientX, e.clientY);
+    const handleMouseMove = (e: MouseEvent) => {
+      if (e.buttons === 1) {
+        const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+        if (!target) return;
         const targetDay = target.getAttribute("data-day");
         const targetCellIndex = target.getAttribute("data-cell-index");
         const mouseRolloutCheck = [
@@ -90,31 +96,25 @@ export const SelectedCellsProvider = ({ children }) => {
         if (targetDay && targetCellIndex && targetDay === selectedCells.day) {
           setSelectedCells((prevState) => ({
             ...prevState,
-            EndCell: targetCellIndex,
+            EndCell: Number(targetCellIndex),
           }));
-        } else if (
-          !mouseRolloutCheck.some((className) =>
-            target.classList.contains(className)
-          )
-        ) {
-          setSelectedCells({
-            day: null,
-            StartCell: null,
-            EndCell: null,
-          });
+        } else if (!mouseRolloutCheck.some((cls) => target.classList.contains(cls))) {
+          setSelectedCells({ day: null, StartCell: null, EndCell: null });
         }
       } else {
-        const target = document.elementFromPoint(e.clientX, e.clientY);
+        const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+        if (!target) return;
         const targetDay = target.getAttribute("data-day");
         const targetCellIndex = target.getAttribute("data-cell-index");
         if (targetDay && targetCellIndex) {
-          setMouseOverTasks(cellsData[targetDay][targetCellIndex])
+          setMouseOverTasks(cellsData[targetDay][Number(targetCellIndex)]);
         }
       }
-      if (/^cell-\d+$/.test(e.target.id)) {
-        if (e.target.dataset.time !== targetTime) {
-          // Log the data-time attribute
-          setTargetTime(e.target.dataset.time);
+
+      const eventTarget = e.target as HTMLElement;
+      if (/^cell-\d+$/.test(eventTarget.id)) {
+        if (eventTarget.dataset.time !== targetTime) {
+          setTargetTime(eventTarget.dataset.time ?? null);
         }
       } else {
         setTargetTime(null);
@@ -122,17 +122,10 @@ export const SelectedCellsProvider = ({ children }) => {
     };
 
     const handleMouseUp = () => {
-      if (selectedCells.day && selectedCells.StartCell && selectedCells.EndCell) {
-        //reset the active cells
-        const startIndex = selectedCells
-          ? Math.min(selectedCells.StartCell, selectedCells.EndCell)
-          : null;
-        const endIndex =
-          (selectedCells
-            ? Math.max(selectedCells.StartCell, selectedCells.EndCell)
-            : null) + 1;
-        //add the inputed time to the active time array
-        const newdataToInput = {
+      if (selectedCells.day && selectedCells.StartCell !== null && selectedCells.EndCell !== null) {
+        const startIndex = Math.min(selectedCells.StartCell, selectedCells.EndCell);
+        const endIndex = Math.max(selectedCells.StartCell, selectedCells.EndCell) + 1;
+        const newDataToInput = {
           [selectedCells.day]: [
             {
               startTime: startIndex * minuteinput,
@@ -141,7 +134,7 @@ export const SelectedCellsProvider = ({ children }) => {
             },
           ],
         };
-        setDataToInput(newdataToInput);
+        setDataToInput(newDataToInput);
       }
     };
 

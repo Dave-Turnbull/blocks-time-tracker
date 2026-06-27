@@ -1,7 +1,16 @@
 import { createContext, useEffect, useState } from "react";
 import taskData from "../test/taskData.json";
 
-interface toolbarContextType {
+export interface Task {
+  color: string;
+  title: string;
+  description: string;
+  category: string;
+}
+
+export type TaskRecord = Record<string, Task>;
+
+interface ToolbarContextType {
   inputValue: number;
   setInputValue: React.Dispatch<React.SetStateAction<number>>;
   minuteinput: number;
@@ -14,13 +23,15 @@ interface toolbarContextType {
   setPickedColor: React.Dispatch<React.SetStateAction<string>>;
   eraseTool: boolean;
   setEraseTool: React.Dispatch<React.SetStateAction<boolean>>;
-  tasks: object;
-  setTasks: React.Dispatch<React.SetStateAction<object>>;
+  tasks: TaskRecord;
+  setTasks: React.Dispatch<React.SetStateAction<TaskRecord>>;
+  isDark: boolean;
+  toggleTheme: () => void;
 }
 
-export const ToolbarContext = createContext<toolbarContextType | null>(null);
+export const ToolbarContext = createContext<ToolbarContextType>({} as ToolbarContextType);
 
-export const ToolbarProvider = ({ children }) => {
+export const ToolbarProvider = ({ children }: { children: React.ReactNode }) => {
   const [inputValue, setInputValue] = useState(15);
   const [minuteinput, setMinuteInput] = useState(15);
   const [startDate, setStartDate] = useState(
@@ -32,10 +43,22 @@ export const ToolbarProvider = ({ children }) => {
   const [pickedColor, setPickedColor] = useState("#000000");
   const [eraseTool, setEraseTool] = useState(false);
 
-  const [tasks, setTasks] = useState(() => {
+  const [tasks, setTasks] = useState<TaskRecord>(() => {
     const savedData = localStorage.getItem("taskData");
     return savedData ? JSON.parse(savedData) : taskData;
   });
+
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    const saved = localStorage.getItem("theme");
+    return saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }, [isDark]);
+
+  const toggleTheme = () => setIsDark((prev) => !prev);
 
   return (
     <ToolbarContext.Provider
@@ -53,7 +76,9 @@ export const ToolbarProvider = ({ children }) => {
         eraseTool,
         setEraseTool,
         tasks,
-        setTasks
+        setTasks,
+        isDark,
+        toggleTheme,
       }}
     >
       {children}

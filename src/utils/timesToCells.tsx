@@ -5,7 +5,7 @@ interface TaskTime {
   taskID: string;
 }
 
-class cellObject {
+export class CellObject {
   tasks: Array<TaskTime>
   startTime:number
   numOfMinutes:number
@@ -30,10 +30,10 @@ class cellObject {
   }
 }
 
-const timesToCells = (timesArray, timePerCell, numOfMinutes = 1440) => {
+const timesToCells = (timesArray: TaskTime[] | undefined, timePerCell: number, numOfMinutes = 1440): CellObject[] => {
   const numberOfCells = numOfMinutes / timePerCell;
 
-  const cellsArray = Array.from({ length: numberOfCells }, (_, index) => new cellObject(index * timePerCell, timePerCell));
+  const cellsArray = Array.from({ length: numberOfCells }, (_, index) => new CellObject(index * timePerCell, timePerCell));
   if (timesArray) {
     timesArray.forEach((event) => {
       const startPositionInCell = event.startTime / timePerCell;

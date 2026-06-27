@@ -30,7 +30,7 @@ export const readableDate = (dateString: string) => {
     return `${weekday} ${day}${daySuffix} ${month} ${year}`;
 }
 
-export const readableTime = (numOfMinutes) => {
+export const readableTime = (numOfMinutes: number) => {
     const hours = String(Math.floor(numOfMinutes / 60)).padStart(2, "0");
     const minutes = String(numOfMinutes % 60).padStart(2, "0");
     return `${hours}:${minutes}`;

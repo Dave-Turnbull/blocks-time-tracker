@@ -1,46 +1,26 @@
-import styled, {keyframes} from "styled-components";
+type GroupPosition = "start" | "end" | "middle";
 
-export const SelectedCellOverlay = ({pickedColor, groupPosition}) => {
+interface SelectedCellOverlayProps {
+  pickedColor: string;
+  groupPosition: GroupPosition;
+}
+
+function getBorderRadius(groupPosition: GroupPosition): string {
+  if (groupPosition === "start") return "10px 0 0 10px";
+  if (groupPosition === "end") return "0 10px 10px 0";
+  return "0";
+}
+
+export const SelectedCellOverlay = ({ pickedColor, groupPosition }: SelectedCellOverlayProps) => {
   return (
-    <Overlay
-      className="overlay"
-      draggable="false"
-      groupPosition={groupPosition}
-      pickedColor={pickedColor}
+    <div
+      className="overlay pointer-events-none z-[100] absolute inset-0"
+      draggable={false}
+      style={{
+        backgroundColor: pickedColor,
+        borderRadius: getBorderRadius(groupPosition),
+        animation: "overlayPulse 0.2s ease-in-out",
+      }}
     />
   );
 };
-
-const overlayAnimation = keyframes`
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.09);
-  }
-  100% {
-    transform: scale(1);
-  }
-`
-
-const Overlay = styled.div<{groupPosition: string, pickedColor}>`
-  pointer-events: none;
-  z-index: 100;
-  right: 0%;
-  left: 0%;
-  position: absolute;
-  top: 0%;
-  bottom: 0%;
-  background-color: ${props => props.pickedColor};
-  animation: ${overlayAnimation} 0.2s ease-in-out;
-  border-radius: ${props => {
-    switch (props.groupPosition) {
-      case 'start':
-        return '10px 0 0 10px';
-      case 'end':
-        return '0 10px 10px 0';
-      default:
-        return '0';
-    }
-  }};
-`

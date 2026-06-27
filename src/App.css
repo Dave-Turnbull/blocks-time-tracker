@@ -1,13 +1,1 @@
-.App {
-  text-align: center;
-}
-
-html {
-  height: 100%;
-}
-
-body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
+/* Global overrides — most styles live in index.css (Tailwind) */
