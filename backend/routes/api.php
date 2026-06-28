@@ -13,5 +13,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/user', [AuthController::class, 'user']);
 
     Route::apiResource('tasks', TaskController::class);
+    Route::post('/time-blocks/erase', [TimeBlockController::class, 'erase']);
     Route::apiResource('time-blocks', TimeBlockController::class);
 });

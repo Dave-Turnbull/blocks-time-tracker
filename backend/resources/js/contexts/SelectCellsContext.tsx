@@ -49,7 +49,7 @@ export const SelectedCellsContext = createContext<SelectCellsContextType>({
 });
 
 export const SelectedCellsProvider = ({ children }: { children: React.ReactNode }) => {
-  const { minuteinput, startDate, endDate, selectedTaskId, updateTaskMru } = useContext(ToolbarContext);
+  const { minuteinput, startDate, endDate, selectedTaskId, updateTaskMru, eraseTool } = useContext(ToolbarContext);
   const [selectedCells, setSelectedCells] = useState<SelectedCellsType>({
     day: null,
     StartCell: null,
@@ -63,7 +63,7 @@ export const SelectedCellsProvider = ({ children }: { children: React.ReactNode 
   const [pendingSelection, setPendingSelection] = useState<PendingSelection | null>(null);
 
   const fetchTimeBlocks = useCallback(() => {
-    api.get('/time-blocks', { params: { start: startDate, end: endDate } })
+    return api.get('/time-blocks', { params: { start: startDate, end: endDate } })
       .then(({ data }) => {
         const cellObjectData: Record<string, CellObject[]> = {};
         const rawData: Record<string, TimeEntry[]> = {};
@@ -151,7 +151,18 @@ export const SelectedCellsProvider = ({ children }: { children: React.ReactNode 
           startTime: startIndex * minuteinput,
           endTime: endIndex * minuteinput,
         };
-        if (selectedTaskId) {
+        if (eraseTool) {
+          api.post('/time-blocks/erase', {
+            date: sel.day,
+            start_time: sel.startTime,
+            end_time: sel.endTime,
+          }).then(() => fetchTimeBlocks()).then(() => {
+            setSelectedCells({ day: null, StartCell: null, EndCell: null });
+          });
+          // Selection is cleared in the .then() above so the erase visual
+          // persists until the refreshed data lands, avoiding a flicker.
+          return;
+        } else if (selectedTaskId) {
           api.post('/time-blocks', {
             task_id: Number(selectedTaskId),
             date: sel.day,

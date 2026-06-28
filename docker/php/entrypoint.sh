@@ -17,12 +17,23 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
-# Inject DB connection settings
-sed -i "s|DB_HOST=.*|DB_HOST=${DB_HOST:-db}|" .env
-sed -i "s|DB_DATABASE=.*|DB_DATABASE=${DB_DATABASE:-timetracker}|" .env
-sed -i "s|DB_USERNAME=.*|DB_USERNAME=${DB_USERNAME:-timetracker}|" .env
-sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD:-secret}|" .env
-sed -i "s|APP_URL=.*|APP_URL=http://localhost:8000|" .env
+# Inject DB connection settings.
+# Use sed to replace if the key exists, append if it doesn't — the Laravel 11
+# SQLite-default .env omits the MySQL keys entirely.
+patch_env() {
+    local key="$1" val="$2"
+    grep -q "^${key}=" .env \
+        && sed -i "s|^${key}=.*|${key}=${val}|" .env \
+        || echo "${key}=${val}" >> .env
+}
+
+patch_env DB_CONNECTION mysql
+patch_env DB_HOST        "${DB_HOST:-db}"
+patch_env DB_PORT        3306
+patch_env DB_DATABASE    "${DB_DATABASE:-timetracker}"
+patch_env DB_USERNAME    "${DB_USERNAME:-timetracker}"
+patch_env DB_PASSWORD    "${DB_PASSWORD:-secret}"
+patch_env APP_URL        http://localhost:8000
 
 # Generate app key on first run
 if ! grep -q "^APP_KEY=base64:" .env 2>/dev/null; then

@@ -216,6 +216,376 @@ class TimeBlockTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Store — overlap resolution
+    // -------------------------------------------------------------------------
+
+    public function test_store_deletes_fully_encompassed_existing_block(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $newTask = Task::factory()->for($user)->create();
+        $existing = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 30,
+            'end_time' => 60,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks', [
+            'task_id' => $newTask->id,
+            'date' => '2024-08-01',
+            'start_time' => 0,
+            'end_time' => 120,
+        ])->assertStatus(201);
+
+        $this->assertDatabaseMissing('time_blocks', ['id' => $existing->id]);
+        $this->assertDatabaseHas('time_blocks', [
+            'user_id' => $user->id,
+            'task_id' => $newTask->id,
+            'start_time' => 0,
+            'end_time' => 120,
+        ]);
+    }
+
+    public function test_store_trims_block_that_starts_before_and_ends_inside_new_range(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $newTask = Task::factory()->for($user)->create();
+        $existing = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 0,
+            'end_time' => 90,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks', [
+            'task_id' => $newTask->id,
+            'date' => '2024-08-01',
+            'start_time' => 60,
+            'end_time' => 120,
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('time_blocks', [
+            'id' => $existing->id,
+            'start_time' => 0,
+            'end_time' => 60,
+        ]);
+    }
+
+    public function test_store_trims_block_that_starts_inside_and_ends_after_new_range(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $newTask = Task::factory()->for($user)->create();
+        $existing = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 60,
+            'end_time' => 180,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks', [
+            'task_id' => $newTask->id,
+            'date' => '2024-08-01',
+            'start_time' => 30,
+            'end_time' => 90,
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('time_blocks', [
+            'id' => $existing->id,
+            'start_time' => 90,
+            'end_time' => 180,
+        ]);
+    }
+
+    public function test_store_splits_block_that_fully_contains_new_range(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $newTask = Task::factory()->for($user)->create();
+        $existing = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 0,
+            'end_time' => 120,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks', [
+            'task_id' => $newTask->id,
+            'date' => '2024-08-01',
+            'start_time' => 30,
+            'end_time' => 60,
+        ])->assertStatus(201);
+
+        // Left fragment (original block updated)
+        $this->assertDatabaseHas('time_blocks', [
+            'id' => $existing->id,
+            'task_id' => $task->id,
+            'start_time' => 0,
+            'end_time' => 30,
+        ]);
+        // Right fragment (new row with original task)
+        $this->assertDatabaseHas('time_blocks', [
+            'user_id' => $user->id,
+            'task_id' => $task->id,
+            'date' => '2024-08-01',
+            'start_time' => 60,
+            'end_time' => 120,
+        ]);
+        // New block
+        $this->assertDatabaseHas('time_blocks', [
+            'user_id' => $user->id,
+            'task_id' => $newTask->id,
+            'start_time' => 30,
+            'end_time' => 60,
+        ]);
+        $this->assertDatabaseCount('time_blocks', 3);
+    }
+
+    public function test_store_resolves_multiple_overlapping_blocks(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $newTask = Task::factory()->for($user)->create();
+        // block A: fully inside new range → deleted
+        TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01', 'start_time' => 60, 'end_time' => 90,
+        ]);
+        // block B: starts before, ends inside → trimmed
+        $blockB = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01', 'start_time' => 0, 'end_time' => 75,
+        ]);
+        // block C: starts inside, ends after → trimmed
+        $blockC = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01', 'start_time' => 90, 'end_time' => 180,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks', [
+            'task_id' => $newTask->id,
+            'date' => '2024-08-01',
+            'start_time' => 60,
+            'end_time' => 120,
+        ])->assertStatus(201);
+
+        $this->assertDatabaseCount('time_blocks', 3);
+        $this->assertDatabaseHas('time_blocks', ['id' => $blockB->id, 'end_time' => 60]);
+        $this->assertDatabaseHas('time_blocks', ['id' => $blockC->id, 'start_time' => 120]);
+    }
+
+    public function test_store_does_not_affect_non_overlapping_blocks(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $newTask = Task::factory()->for($user)->create();
+        $before = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01', 'start_time' => 0, 'end_time' => 30,
+        ]);
+        $after = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01', 'start_time' => 120, 'end_time' => 180,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks', [
+            'task_id' => $newTask->id,
+            'date' => '2024-08-01',
+            'start_time' => 60,
+            'end_time' => 90,
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('time_blocks', ['id' => $before->id, 'start_time' => 0, 'end_time' => 30]);
+        $this->assertDatabaseHas('time_blocks', ['id' => $after->id, 'start_time' => 120, 'end_time' => 180]);
+    }
+
+    public function test_store_does_not_affect_blocks_on_other_dates(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $newTask = Task::factory()->for($user)->create();
+        $otherDay = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-02', 'start_time' => 0, 'end_time' => 120,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks', [
+            'task_id' => $newTask->id,
+            'date' => '2024-08-01',
+            'start_time' => 0,
+            'end_time' => 120,
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('time_blocks', [
+            'id' => $otherDay->id,
+            'start_time' => 0,
+            'end_time' => 120,
+        ]);
+    }
+
+    public function test_store_does_not_affect_other_users_blocks(): void
+    {
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+        $otherTask = Task::factory()->for($other)->create();
+        $userTask = Task::factory()->for($user)->create();
+        $otherBlock = TimeBlock::factory()->for($other)->for($otherTask)->create([
+            'date' => '2024-08-01', 'start_time' => 0, 'end_time' => 120,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks', [
+            'task_id' => $userTask->id,
+            'date' => '2024-08-01',
+            'start_time' => 0,
+            'end_time' => 120,
+        ])->assertStatus(201);
+
+        $this->assertDatabaseHas('time_blocks', [
+            'id' => $otherBlock->id,
+            'start_time' => 0,
+            'end_time' => 120,
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Erase
+    // -------------------------------------------------------------------------
+
+    public function test_erase_requires_authentication(): void
+    {
+        $this->postJson('/api/time-blocks/erase', [])->assertUnauthorized();
+    }
+
+    public function test_erase_validates_required_fields(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->postJson('/api/time-blocks/erase', [])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['date', 'start_time', 'end_time']);
+    }
+
+    public function test_erase_deletes_fully_encompassed_block(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $block = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01', 'start_time' => 30, 'end_time' => 60,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks/erase', [
+            'date' => '2024-08-01',
+            'start_time' => 0,
+            'end_time' => 120,
+        ])->assertNoContent();
+
+        $this->assertDatabaseMissing('time_blocks', ['id' => $block->id]);
+    }
+
+    public function test_erase_trims_block_overlapping_on_left(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $block = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01', 'start_time' => 0, 'end_time' => 90,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks/erase', [
+            'date' => '2024-08-01',
+            'start_time' => 60,
+            'end_time' => 120,
+        ])->assertNoContent();
+
+        $this->assertDatabaseHas('time_blocks', [
+            'id' => $block->id, 'start_time' => 0, 'end_time' => 60,
+        ]);
+    }
+
+    public function test_erase_trims_block_overlapping_on_right(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $block = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01', 'start_time' => 60, 'end_time' => 180,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks/erase', [
+            'date' => '2024-08-01',
+            'start_time' => 30,
+            'end_time' => 90,
+        ])->assertNoContent();
+
+        $this->assertDatabaseHas('time_blocks', [
+            'id' => $block->id, 'start_time' => 90, 'end_time' => 180,
+        ]);
+    }
+
+    public function test_erase_splits_block_that_contains_the_erase_range(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $block = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01', 'start_time' => 0, 'end_time' => 120,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks/erase', [
+            'date' => '2024-08-01',
+            'start_time' => 30,
+            'end_time' => 60,
+        ])->assertNoContent();
+
+        $this->assertDatabaseHas('time_blocks', [
+            'id' => $block->id, 'start_time' => 0, 'end_time' => 30,
+        ]);
+        $this->assertDatabaseHas('time_blocks', [
+            'user_id' => $user->id,
+            'task_id' => $task->id,
+            'start_time' => 60,
+            'end_time' => 120,
+        ]);
+        $this->assertDatabaseCount('time_blocks', 2);
+    }
+
+    public function test_erase_does_not_affect_other_users_blocks(): void
+    {
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+        $otherTask = Task::factory()->for($other)->create();
+        $otherBlock = TimeBlock::factory()->for($other)->for($otherTask)->create([
+            'date' => '2024-08-01', 'start_time' => 0, 'end_time' => 120,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks/erase', [
+            'date' => '2024-08-01',
+            'start_time' => 0,
+            'end_time' => 120,
+        ])->assertNoContent();
+
+        $this->assertDatabaseHas('time_blocks', ['id' => $otherBlock->id]);
+    }
+
+    public function test_erase_returns_no_content_when_nothing_overlaps(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01', 'start_time' => 0, 'end_time' => 30,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks/erase', [
+            'date' => '2024-08-01',
+            'start_time' => 60,
+            'end_time' => 120,
+        ])->assertNoContent();
+    }
+
+    // -------------------------------------------------------------------------
     // Update
     // -------------------------------------------------------------------------
 
