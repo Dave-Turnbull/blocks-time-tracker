@@ -56,15 +56,14 @@ export const TaskPickerModal = () => {
 
   const inputClass =
     'w-full px-2 py-1 rounded border text-sm ' +
-    'bg-slate-50 border-slate-300 text-slate-700 ' +
-    'dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100';
+    'bg-surface-input border-line-strong text-fg';
 
   const btnPrimary =
-    'flex-1 px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors disabled:opacity-50';
+    'flex-1 px-3 py-1.5 rounded bg-accent hover:bg-accent-hover text-accent-fg text-sm font-medium transition-colors disabled:opacity-50';
 
   const btnSecondary =
-    'px-3 py-1.5 rounded border border-slate-300 dark:border-slate-600 text-sm ' +
-    'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors';
+    'px-3 py-1.5 rounded border border-line-strong text-sm ' +
+    'text-fg-muted hover:bg-surface-hover transition-colors';
 
   return (
     <div
@@ -72,11 +71,11 @@ export const TaskPickerModal = () => {
       onMouseDown={handleClose}
     >
       <div
-        className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 w-80 max-h-[80vh] flex flex-col"
+        className="bg-surface rounded-lg shadow-panel p-6 w-80 max-h-[80vh] flex flex-col"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <h2 className="font-semibold text-slate-700 dark:text-slate-100 mb-1">Pick a task</h2>
-        <p className="text-xs text-slate-400 dark:text-slate-500 mb-4">
+        <h2 className="font-semibold text-fg mb-1">Pick a task</h2>
+        <p className="text-xs text-fg-subtle mb-4">
           {readableTime(pendingSelection.startTime)} – {readableTime(pendingSelection.endTime)}
           {' · '}{pendingSelection.day}
         </p>
@@ -88,32 +87,32 @@ export const TaskPickerModal = () => {
                 <li key={task.id}>
                   <button
                     onClick={() => handleSelectTask(String(task.id))}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-left transition-colors"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded border border-line hover:bg-surface-hover text-left transition-colors"
                   >
                     <span
                       className="w-3.5 h-3.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: task.color }}
                     />
-                    <span className="text-sm text-slate-700 dark:text-slate-100 truncate">{task.name}</span>
+                    <span className="text-sm text-fg truncate">{task.name}</span>
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-400 dark:text-slate-500 mb-4">No tasks yet. Create one below.</p>
+            <p className="text-sm text-fg-subtle mb-4">No tasks yet. Create one below.</p>
           )}
 
           {!showCreate ? (
             <button
               onClick={() => setShowCreate(true)}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm text-accent-text hover:underline"
             >
               + New task
             </button>
           ) : (
-            <form onSubmit={handleCreateAndAdd} className="space-y-3 border-t border-slate-200 dark:border-slate-700 pt-3">
+            <form onSubmit={handleCreateAndAdd} className="space-y-3 border-t border-line pt-3">
               <div>
-                <label htmlFor="new-task-name" className="text-xs text-slate-500 dark:text-slate-400 block mb-1">
+                <label htmlFor="new-task-name" className="text-xs text-fg-muted block mb-1">
                   Name
                 </label>
                 <input
@@ -128,7 +127,7 @@ export const TaskPickerModal = () => {
                 />
               </div>
               <div>
-                <label htmlFor="new-task-description" className="text-xs text-slate-500 dark:text-slate-400 block mb-1">
+                <label htmlFor="new-task-description" className="text-xs text-fg-muted block mb-1">
                   Description (optional)
                 </label>
                 <textarea
@@ -141,7 +140,7 @@ export const TaskPickerModal = () => {
                 />
               </div>
               <div className="flex items-center gap-2">
-                <label htmlFor="new-task-color" className="text-xs text-slate-500 dark:text-slate-400">
+                <label htmlFor="new-task-color" className="text-xs text-fg-muted">
                   Color
                 </label>
                 <input
@@ -166,7 +165,7 @@ export const TaskPickerModal = () => {
 
         <button
           onClick={handleClose}
-          className="mt-4 w-full text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+          className="mt-4 w-full text-xs text-fg-subtle hover:text-fg-secondary transition-colors"
         >
           Dismiss
         </button>

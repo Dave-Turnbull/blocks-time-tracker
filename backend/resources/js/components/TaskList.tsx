@@ -26,12 +26,12 @@ const TaskList = ({ singleDayDataOnScroll }: TaskListProps) => {
 
   return (
     <div className="p-4">
-      <h2 className="text-base font-semibold mb-3 pb-2 border-b text-slate-700 border-slate-200 dark:text-slate-200 dark:border-slate-700">
+      <h2 className="text-base font-semibold mb-3 pb-2 border-b text-fg-secondary border-line">
         {singleDayDataOnScroll || 'Time blocks'}
       </h2>
 
       {sorted.length === 0 ? (
-        <p className="text-xs text-slate-400 dark:text-slate-500">No time blocks for this day.</p>
+        <p className="text-xs text-fg-subtle">No time blocks for this day.</p>
       ) : (
         <ul className="list-none p-0 m-0 space-y-1.5">
           {sorted.map((block) => {
@@ -52,8 +52,8 @@ const TaskList = ({ singleDayDataOnScroll }: TaskListProps) => {
                 className={
                   'text-sm rounded px-3 py-2 border transition-colors ' +
                   (isHovered
-                    ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/30 dark:border-blue-600'
-                    : 'bg-slate-50 border-slate-200 dark:bg-slate-700 dark:border-slate-600')
+                    ? 'bg-[var(--color-surface-active)] border-accent-line'
+                    : 'bg-surface-hover border-line')
                 }
               >
                 <div className="flex items-start gap-2">
@@ -62,13 +62,13 @@ const TaskList = ({ singleDayDataOnScroll }: TaskListProps) => {
                     style={{ backgroundColor: task.color }}
                   />
                   <div className="min-w-0">
-                    <p className="font-medium m-0 text-slate-700 dark:text-slate-100 truncate">{task.name}</p>
+                    <p className="font-medium m-0 text-fg truncate">{task.name}</p>
                     {task.description && (
-                      <p className="text-xs m-0 mt-0.5 text-slate-500 dark:text-slate-400 truncate">
+                      <p className="text-xs m-0 mt-0.5 text-fg-muted truncate">
                         {task.description}
                       </p>
                     )}
-                    <p className="text-xs m-0 mt-0.5 text-slate-500 dark:text-slate-400">
+                    <p className="text-xs m-0 mt-0.5 text-fg-muted">
                       {readableTime(block.startTime)} – {readableTime(block.endTime)}
                     </p>
                   </div>

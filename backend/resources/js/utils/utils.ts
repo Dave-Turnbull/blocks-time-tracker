@@ -1,10 +1,8 @@
 export const readableDate = (dateString: string) => {
     const date = new Date(dateString);
 
-    // Array of weekdays
     const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-    // Array of month names
     const months = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
@@ -15,7 +13,6 @@ export const readableDate = (dateString: string) => {
     const month = months[date.getUTCMonth()];
     const year = date.getUTCFullYear();
 
-    // Adding suffix to day
     let daySuffix;
     if (day % 10 === 1 && day !== 11) {
         daySuffix = 'st';

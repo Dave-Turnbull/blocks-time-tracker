@@ -34,7 +34,7 @@ export const Cell = memo(({ cellIndex, cell, dayToRender, selected, groupPositio
       data-day={dayToRender}
       data-time={cell.startTime}
       data-cell-index={cellIndex}
-      className="w-10 h-10 bg-[rgb(170,170,170)] m-[1px] relative"
+      className="w-10 h-10 bg-cell m-[1px] relative"
       style={borderRadius ? { borderRadius } : undefined}
     >
       {selected && !eraseTool && (

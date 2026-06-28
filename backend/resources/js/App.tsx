@@ -6,7 +6,7 @@ import { TaskPickerModal } from "./components/TaskPickerModal";
 
 const App = () => {
   return (
-    <div draggable={false} className="relative h-screen overflow-hidden flex flex-col justify-between bg-stone-50 dark:bg-slate-900">
+    <div draggable={false} className="relative h-screen overflow-hidden flex flex-col justify-between bg-page">
       <ToolbarProvider>
         <SelectedCellsProvider>
           <RenderDateRange />

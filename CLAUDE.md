@@ -292,6 +292,8 @@ function renderMyComponent(ctxOverrides = {}) {
 
 ## Good Practices
 
+**Comments only when the WHY is non-obvious.** Don't describe what the code does — that's what the code is for. Only comment when there's a hidden constraint, a subtle invariant, or behaviour that would surprise a reader. Never reference the current task, conversation, or callers.
+
 **Tests are mandatory for new features.** Any new controller action gets a Laravel feature test. Any new React component that renders user-visible state gets a Vitest component test. Utility functions get unit tests. Run both suites before marking work done.
 
 **Update this file when you change the architecture.** If you add a model, controller, context, component, or utility — add it to the directory layout section and document its purpose. If you change an API contract — update the API Reference section. If you change test infrastructure — update the Running Tests and Test Patterns sections.
@@ -309,6 +311,74 @@ function renderMyComponent(ctxOverrides = {}) {
 **Do not add `use AuthorizesRequests` to individual controllers.** It belongs only on the base `Controller.php`. Laravel 11 ships with an empty base controller — it was added manually and must stay there.
 
 **Laravel 11 has no `api.php` by default.** It was created via `php artisan install:api`. Do not delete it.
+
+---
+
+## Theming & Design Tokens
+
+All visual styling is centralised so the look can be changed by editing one file.
+
+### Architecture
+
+- **`backend/resources/js/index.css`** — single source of truth for all design tokens as CSS custom properties. Edit `:root` for the light theme and `.dark` for dark.
+- **`backend/tailwind.config.js`** — maps CSS variables to Tailwind utility classes via `theme.extend.colors`, `fontFamily`, and `boxShadow`. No raw Tailwind colour names (e.g. `slate-700`) appear in components; they all use semantic tokens.
+- **`darkMode: 'class'`** — dark mode is toggled by adding/removing the `dark` class on `<html>` (see `ToolbarContext.tsx`). No `dark:` prefixed classes exist in components; both themes are handled entirely by the CSS variables.
+
+### Token categories
+
+**Solid colours** — stored as bare `R G B` channels in CSS vars so Tailwind's opacity modifier syntax (e.g. `bg-surface/50`) works:
+
+| CSS var | Tailwind class | Purpose |
+|---------|----------------|---------|
+| `--color-page` | `bg-page` | Outer app background |
+| `--color-surface` | `bg-surface` | Panels, toolbar, cards, modals |
+| `--color-surface-input` | `bg-surface-input` | Form inputs |
+| `--color-surface-btn` | `bg-surface-btn` | Default button background |
+| `--color-surface-btn-hover` | `hover:bg-surface-btn-hover` | Default button hover |
+| `--color-surface-hover` | `bg-surface-hover` | List-item hover state |
+| `--color-fg` | `text-fg` | Primary text |
+| `--color-fg-secondary` | `text-fg-secondary` | Secondary text, labels |
+| `--color-fg-muted` | `text-fg-muted` | Supporting text |
+| `--color-fg-subtle` | `text-fg-subtle` | Hints, empty-state copy |
+| `--color-line` | `border-line` | Default borders |
+| `--color-line-strong` | `border-line-strong` | Input / button borders |
+| `--color-accent` | `bg-accent` | Primary action buttons |
+| `--color-accent-hover` | `hover:bg-accent-hover` | Primary button hover |
+| `--color-accent-fg` | `text-accent-fg` | Text on accent backgrounds |
+| `--color-accent-text` | `text-accent-text` | Link / accent-coloured text |
+| `--color-accent-line` | `border-accent-line` | Borders on accent-tinted items |
+| `--color-ring` | `ring-ring` | Focus rings |
+| `--color-danger-fg` | `text-danger-fg` | Text on danger backgrounds |
+| `--color-danger-line` | `border-danger-line` | Danger/erase button border |
+| `--color-danger-note` | `text-danger-note` | Error message text |
+| `--color-cell` | `bg-cell` | Empty time-grid cells |
+| `--color-task-group` | `border-task-group` | Task-group grouping border |
+
+**Full-value tokens (opacity baked in)** — Tailwind can't wrap these in its `rgb()` system, so components consume them as `bg-[var(--color-...)]` arbitrary values:
+
+| CSS var | Used for |
+|---------|---------|
+| `--color-danger-bg` | Erase-tool button background |
+| `--color-danger-bg-hover` | Erase-tool button hover |
+| `--color-danger-subtle` | Error-message background (Login/Register) |
+| `--color-surface-active` | Selected/hovered list-item background |
+| `--color-cell-label` | Time-group label text (opacity on black/white) |
+
+**Unchanged Tailwind utilities** (functional, same in both themes, not part of the token system):
+- `bg-black/50` — modal backdrop
+- `bg-blue-500/60` — drag-selection overlay on cells
+- `bg-yellow-300/50` — sidebar-hover overlay on cells
+
+### Typography & shadows
+
+- `--font-sans` — override to change the typeface (e.g. set to `'Inter'` after importing from Google Fonts).
+- `--shadow-panel` — used via `shadow-panel` Tailwind class on modals and dropdowns.
+
+### Adding a new theme
+
+1. Add a new class selector (e.g. `.theme-forest`) in `index.css` alongside `.dark`.
+2. Override any CSS vars you want to change.
+3. Apply the selector to `<html>` instead of / in addition to `dark` (update `ToolbarContext.tsx`).
 
 ---
 

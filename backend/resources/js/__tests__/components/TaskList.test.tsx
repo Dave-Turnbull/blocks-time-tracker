@@ -99,14 +99,14 @@ describe('TaskList', () => {
   it('applies highlight class when hoveredTimeBlockId matches a block id', () => {
     renderTaskList('2026-06-28', 10);
     const items = screen.getAllByRole('listitem');
-    expect(items[0].className).toMatch(/blue/);
-    expect(items[1].className).not.toMatch(/blue/);
+    expect(items[0].className).toMatch(/surface-active/);
+    expect(items[1].className).not.toMatch(/surface-active/);
   });
 
   it('does not apply highlight when hoveredTimeBlockId is null', () => {
     renderTaskList('2026-06-28', null);
     screen.getAllByRole('listitem').forEach((item) => {
-      expect(item.className).not.toMatch(/blue/);
+      expect(item.className).not.toMatch(/surface-active/);
     });
   });
 

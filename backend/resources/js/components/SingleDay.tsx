@@ -27,7 +27,7 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
 
   return (
     <div key={dayToRender} className="innercontainer max-w-[1200px]" draggable={false}>
-      <h2 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mt-4 mb-2 select-none" draggable={false}>
+      <h2 className="text-lg font-semibold text-fg-secondary mt-4 mb-2 select-none" draggable={false}>
         {readableDate(dayToRender)}
       </h2>
       <div id="cell-container" className="cell-container flex flex-wrap" draggable={false}>
@@ -39,7 +39,7 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
 
           return (
             <div key={groupIndex} className="cell-group-container m-[1px]">
-              <div className="cell-group flex flex-nowrap border-[3px] px-[2px] py-[1px] -mx-[2px] border-solid border-[#cf2e27] relative rounded-xl">
+              <div className="cell-group flex flex-nowrap border-[3px] px-[2px] py-[1px] -mx-[2px] border-solid border-task-group relative rounded-xl">
                 {groupOfCells.map((cell, index) => {
                   const cellIndex = index + start;
                   const isSelected =
@@ -63,7 +63,7 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
                   );
                 })}
               </div>
-              <p className="timeLabel text-xs font-bold text-black/45 dark:text-white/45 m-0 p-0 ml-[5px]">
+              <p className="timeLabel text-xs font-bold text-[var(--color-cell-label)] m-0 p-0 ml-[5px]">
                 {readableTime(totalMinutes)}
               </p>
             </div>

@@ -66,7 +66,7 @@ export const RenderDateRange = () => {
           </div>
         ))}
       </div>
-      <div className="flex-1 bg-white border-l border-slate-200 overflow-auto dark:bg-slate-800 dark:border-slate-700">
+      <div className="flex-1 bg-surface border-l border-line overflow-auto">
         <TaskList singleDayDataOnScroll={currentFocusedDay} />
       </div>
     </div>

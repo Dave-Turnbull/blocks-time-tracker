@@ -4,16 +4,14 @@ import { useAuth } from '../contexts/AuthContext';
 
 const inputClass =
   "px-2 py-1 rounded text-sm focus:outline-none border " +
-  "bg-slate-100 text-slate-700 border-slate-300 focus:border-slate-500 " +
-  "dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600 dark:focus:border-slate-400";
+  "bg-surface-input text-fg border-line-strong focus:border-fg-muted";
 
 const labelClass =
-  "text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400";
+  "text-xs font-medium uppercase tracking-wide text-fg-muted";
 
 const btnBase =
   "px-3 py-1 rounded text-sm font-medium transition-colors border " +
-  "bg-slate-200 hover:bg-slate-300 text-slate-700 border-slate-300 " +
-  "dark:bg-slate-600 dark:hover:bg-slate-500 dark:text-slate-100 dark:border-slate-500";
+  "bg-surface-btn hover:bg-surface-btn-hover text-fg-secondary border-line-strong";
 
 const TaskSelector = () => {
   const { tasks, selectedTaskId, setSelectedTaskId, taskMruOrder } = useContext(ToolbarContext);
@@ -61,14 +59,14 @@ const TaskSelector = () => {
             <span className="max-w-[100px] truncate">{selectedTask.name}</span>
           </>
         ) : (
-          <span className="text-slate-400 dark:text-slate-400">No task</span>
+          <span className="text-fg-subtle">No task</span>
         )}
         <span className="ml-auto opacity-50 text-xs">▾</span>
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full mb-2 left-0 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden">
-          <div className="p-2 border-b border-slate-200 dark:border-slate-700">
+        <div className="absolute bottom-full mb-2 left-0 w-56 bg-surface rounded-lg shadow-panel border border-line z-50 overflow-hidden">
+          <div className="p-2 border-b border-line">
             <input
               type="text"
               placeholder="Search tasks…"
@@ -84,8 +82,8 @@ const TaskSelector = () => {
                 onMouseDown={(e) => { e.stopPropagation(); selectTask(null); }}
                 className={`w-full text-left px-3 py-1.5 text-sm transition-colors ${
                   !selectedTaskId
-                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-100'
-                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                    ? 'bg-surface-input text-fg'
+                    : 'text-fg-muted hover:bg-surface-hover'
                 }`}
               >
                 No task (show picker)
@@ -97,8 +95,8 @@ const TaskSelector = () => {
                   onMouseDown={(e) => { e.stopPropagation(); selectTask(String(task.id)); }}
                   className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors ${
                     selectedTaskId === String(task.id)
-                      ? 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-100'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                      ? 'bg-surface-input text-fg'
+                      : 'text-fg-secondary hover:bg-surface-hover'
                   }`}
                 >
                   <span
@@ -110,7 +108,7 @@ const TaskSelector = () => {
               </li>
             ))}
             {filtered.length === 0 && (
-              <li className="px-3 py-2 text-xs text-slate-400 dark:text-slate-500">
+              <li className="px-3 py-2 text-xs text-fg-subtle">
                 No tasks match
               </li>
             )}
@@ -177,8 +175,7 @@ export const Toolbar = () => {
     <menu
       className={
         "relative flex flex-row flex-wrap gap-x-6 gap-y-2 items-center px-6 py-3 z-[100] m-0 " +
-        "bg-white border-t border-slate-200 " +
-        "dark:bg-slate-800 dark:border-slate-700"
+        "bg-surface border-t border-line"
       }
     >
       <div className="flex items-center gap-2">
@@ -226,7 +223,7 @@ export const Toolbar = () => {
         onClick={() => setEraseTool(!eraseTool)}
         className={`px-3 py-1 rounded text-sm font-medium transition-colors border ${
           eraseTool
-            ? "bg-red-100 hover:bg-red-200 text-red-700 border-red-300 dark:bg-red-900/50 dark:hover:bg-red-800/60 dark:text-red-300 dark:border-red-700"
+            ? "bg-[var(--color-danger-bg)] hover:bg-[var(--color-danger-bg-hover)] text-danger-fg border-danger-line"
             : btnBase
         }`}
       >

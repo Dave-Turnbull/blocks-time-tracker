@@ -2,6 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Design tokens ───────────────────────────────────────────────────────── */
+
+/* ─── Light theme ─────────────────────────────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --color-page:              245 245 244;   /* main body background      */
+  --color-surface:           255 255 255;   /* panels, cards, modals     */
+  --color-surface-input:     241 245 249;   /* form inputs               */
+  --color-surface-btn:       226 232 240;   /* default buttons           */
+  --color-surface-btn-hover: 203 213 225;   /* default button hover      */
+  --color-surface-hover:     248 250 252;   /* list-item hover           */
+
+  /* Text */
+  --color-fg:                30 41 59;      /* primary                   */
+  --color-fg-secondary:      51 65 85;      /* labels, headings          */
+  --color-fg-muted:          100 116 139;   /* supporting                */
+  --color-fg-subtle:         148 163 184;   /* hints, empty states       */
+
+  /* Borders */
+  --color-line:              226 232 240;   /* default                   */
+  --color-line-strong:       203 213 225;   /* inputs, buttons           */
+
+  /* Accent */
+  --color-accent:            37 99 235;     /* primary buttons           */
+  --color-accent-hover:      29 78 216;     /* primary button hover      */
+  --color-accent-fg:         255 255 255;   /* text on accent            */
+  --color-accent-text:       37 99 235;     /* links                     */
+  --color-accent-line:       147 197 253;   /* accent item borders       */
+
+  /* Focus */
+  --color-ring:              59 130 246;
+
+  /* All themes */
+  --color-danger-fg:         185 28 28;     /* danger text               */
+  --color-danger-line:       252 165 165;   /* danger border             */
+  --color-danger-note:       220 38 38;     /* error message text        */
+
+  /* Time grid */
+  --color-cell:              170 170 170;   /* empty cell                */
+  --color-task-group:        207 46 39;     /* cell group border         */
+
+  /* Opacity-mixed — used via bg-[var(--color-...)] */
+  --color-danger-bg:         #fee2e2;       /* danger button             */
+  --color-danger-bg-hover:   #fecaca;       /* danger button hover       */
+  --color-danger-subtle:     #fef2f2;       /* error message background  */
+  --color-surface-active:    #eff6ff;       /* selected list items       */
+  --color-cell-label:        rgb(0 0 0 / 0.45);   /* time group labels   */
+
+  /* Typography */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+               'Segoe UI', sans-serif;
+
+  /* Shadows */
+  --shadow-panel: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+                  0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* ─── Dark theme ──────────────────────────────────────────────────────────── */
+.dark {
+  /* Backgrounds */
+  --color-page:              20 20 30;
+  --color-surface:           30 41 59;
+  --color-surface-input:     51 65 85;
+  --color-surface-btn:       71 85 105;
+  --color-surface-btn-hover: 100 116 139;
+  --color-surface-hover:     51 65 85;
+
+  /* Text */
+  --color-fg:                241 245 249;
+  --color-fg-secondary:      203 213 225;
+  --color-fg-muted:          148 163 184;
+  --color-fg-subtle:         100 116 139;
+
+  /* Borders */
+  --color-line:              51 65 85;
+  --color-line-strong:       71 85 105;
+
+  /* Accent */
+  --color-accent:            59 130 246;
+  --color-accent-hover:      37 99 235;
+  --color-accent-text:       96 165 250;
+  --color-accent-line:       37 99 235;
+
+  /* Danger */
+  --color-danger-fg:         252 165 165;
+  --color-danger-line:       185 28 28;
+  --color-danger-note:       248 113 113;
+
+  /* Opacity-mixed */
+  --color-danger-bg:         rgb(127 29 29 / 0.5);
+  --color-danger-bg-hover:   rgb(153 27 27 / 0.6);
+  --color-danger-subtle:     rgb(127 29 29 / 0.2);
+  --color-surface-active:    rgb(30 64 175 / 0.3);
+  --color-cell-label:        rgb(255 255 255 / 0.45);
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────── */
 @keyframes overlayPulse {
   0%   { transform: scale(1); }
   50%  { transform: scale(1.09); }
