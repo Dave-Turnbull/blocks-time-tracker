@@ -2,6 +2,7 @@ import { SelectedCellsProvider } from "./contexts/SelectCellsContext";
 import { Toolbar } from "./components/Toolbar";
 import { ToolbarProvider } from "./contexts/ToolbarContext";
 import { RenderDateRange } from "./components/RenderDateRange";
+import { TaskPickerModal } from "./components/TaskPickerModal";
 
 const App = () => {
   return (
@@ -9,6 +10,7 @@ const App = () => {
       <ToolbarProvider>
         <SelectedCellsProvider>
           <RenderDateRange />
+          <TaskPickerModal />
         </SelectedCellsProvider>
         <Toolbar />
       </ToolbarProvider>

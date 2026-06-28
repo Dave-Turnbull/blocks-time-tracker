@@ -11,11 +11,16 @@ export const RenderDateRange = () => {
   const cellsWrapperRef = useRef<HTMLDivElement>(null);
   const dayComponentRefArray = useRef<(HTMLDivElement | null)[]>([]);
 
+  // Keep the focused day in sync with cellsData: set it on first load and
+  // reset it whenever the date range changes and the current day falls out of range.
   useEffect(() => {
-    if (!currentFocusedDay && cellsData) {
-      setCurrentFocusedDay(Object.keys(cellsData)[0]);
+    const keys = Object.keys(cellsData);
+    if (keys.length > 0 && !cellsData[currentFocusedDay]) {
+      setCurrentFocusedDay(keys[0]);
     }
+  }, [cellsData, currentFocusedDay]);
 
+  useEffect(() => {
     function updateScrollPosition() {
       const focusedDay = dayComponentRefArray.current
         .filter((el): el is HTMLDivElement => el !== null)
@@ -24,7 +29,7 @@ export const RenderDateRange = () => {
             el.getBoundingClientRect().top < 20 &&
             el.getBoundingClientRect().top + el.getBoundingClientRect().height > 20
         );
-      if (focusedDay && focusedDay.dataset.date !== currentFocusedDay) {
+      if (focusedDay) {
         setCurrentFocusedDay(focusedDay.dataset.date ?? "");
       }
     }

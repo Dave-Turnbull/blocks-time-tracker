@@ -60,7 +60,7 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │       ├── contexts/
 │   │       │   ├── AuthContext.tsx         ← User state; login/register/logout; fetches /api/auth/user on mount
 │   │       │   ├── ToolbarContext.tsx      ← Global toolbar state + fetches /api/tasks on mount
-│   │       │   └── SelectCellsContext.tsx  ← Mouse drag state; fetches /api/time-blocks per date range; exposes refreshTimeBlocks
+│   │       │   └── SelectCellsContext.tsx  ← Mouse drag state; fetches /api/time-blocks per date range; exposes refreshTimeBlocks, pendingSelection, submitTimeBlock, clearPendingSelection
 │   │       ├── pages/
 │   │       │   ├── Login.tsx     ← Guest-only; calls AuthContext.login
 │   │       │   └── Register.tsx  ← Guest-only; calls AuthContext.register
@@ -69,19 +69,21 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │       │   ├── RenderDateRange.tsx     ← Iterates startDate→endDate, renders SingleDay per day
 │   │       │   ├── SingleDay.tsx           ← Renders one column of Cell components for a date
 │   │       │   ├── TaskList.tsx            ← Sidebar task list (uses tasks from ToolbarContext)
+│   │       │   ├── TaskPickerModal.tsx     ← Modal after drag-select; pick task or create new; POSTs time block
 │   │       │   └── Cell/
 │   │       │       ├── Cell.tsx                          ← Single time cell; renders task overlay if occupied
-│   │       │       └── components/SelectedCellOverlay.tsx ← Highlight shown during mouse drag
+│   │       │       └── components/SelectedCellOverlay.tsx ← Fixed blue highlight shown during mouse drag
 │   │       ├── utils/
 │   │       │   ├── timesToCells.tsx  ← Converts TimeEntry[] to CellObject[] (one per cell-slot in the day)
 │   │       │   ├── utils.ts          ← readableDate(dateString), readableTime(minutes)
 │   │       │   └── updateData.ts     ← (legacy helper, not currently used by API-backed flow)
 │   │       └── __tests__/
-│   │           ├── setup.ts                       ← imports @testing-library/jest-dom
-│   │           ├── utils/timesToCells.test.ts     ← 15 tests for timesToCells
-│   │           ├── utils/utils.test.ts            ← 16 tests for readableTime + readableDate
-│   │           ├── pages/Login.test.tsx           ← 7 component tests (mocks AuthContext + react-router)
-│   │           └── pages/Register.test.tsx        ← 7 component tests
+│   │           ├── setup.ts                               ← imports @testing-library/jest-dom
+│   │           ├── utils/timesToCells.test.ts             ← 15 tests for timesToCells
+│   │           ├── utils/utils.test.ts                    ← 16 tests for readableTime + readableDate
+│   │           ├── pages/Login.test.tsx                   ← 7 component tests (mocks AuthContext + react-router)
+│   │           ├── pages/Register.test.tsx                ← 7 component tests
+│   │           └── components/TaskPickerModal.test.tsx    ← 10 component tests
 │   ├── tests/Feature/Api/
 │   │   ├── AuthTest.php       ← 14 tests: register, login, logout, /auth/user
 │   │   ├── TaskTest.php       ← 16 tests: CRUD + 401/403 isolation
@@ -234,7 +236,7 @@ cd backend && npx vitest
 ```
 - Environment: jsdom with `@testing-library/react`
 - Setup: `backend/resources/js/__tests__/setup.ts` imports `@testing-library/jest-dom`
-- **45 tests, all passing**
+- **55 tests, all passing**
 
 ---
 
@@ -312,5 +314,6 @@ function renderMyComponent(ctxOverrides = {}) {
 
 ## Pending Work
 
-- **Mouse-up → POST time block**: `SelectCellsContext.handleMouseUp` currently `console.log`s the selection. It needs to open a task-picker UI and POST to `/api/time-blocks`, then call `refreshTimeBlocks`.
+- **Erase tool**: The toggle exists in the toolbar but `handleMouseUp` does not DELETE time blocks when erase mode is active.
+- **Task management in sidebar**: `TaskList.tsx` is read-only. Edit/delete task actions have not been implemented.
 - **Seeders**: No seeders exist yet. A `DatabaseSeeder` skeleton is at `backend/database/seeders/DatabaseSeeder.php`.

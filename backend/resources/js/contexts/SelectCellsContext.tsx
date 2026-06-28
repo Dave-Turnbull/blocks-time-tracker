@@ -16,26 +16,40 @@ export interface TimeEntry {
   taskID: string;
 }
 
+export interface PendingSelection {
+  day: string;
+  startTime: number;
+  endTime: number;
+}
+
 interface SelectCellsContextType {
   selectedCells: SelectedCellsType;
   cellsData: Record<string, CellObject[]>;
-  mouseOverTasks: CellObject;
+  hoveredTimeBlockId: number | null;
+  sidebarHoveredBlockId: number | null;
+  setSidebarHoveredBlockId: (id: number | null) => void;
   currentTimeData: Record<string, TimeEntry[]>;
   refreshTimeBlocks: () => void;
+  pendingSelection: PendingSelection | null;
+  submitTimeBlock: (taskId: string) => Promise<void>;
+  clearPendingSelection: () => void;
 }
-
-const emptyCellObject = new CellObject(0, 0);
 
 export const SelectedCellsContext = createContext<SelectCellsContextType>({
   selectedCells: { day: null, StartCell: null, EndCell: null },
   cellsData: {},
-  mouseOverTasks: emptyCellObject,
+  hoveredTimeBlockId: null,
+  sidebarHoveredBlockId: null,
+  setSidebarHoveredBlockId: () => {},
   currentTimeData: {},
   refreshTimeBlocks: () => {},
+  pendingSelection: null,
+  submitTimeBlock: async () => {},
+  clearPendingSelection: () => {},
 });
 
 export const SelectedCellsProvider = ({ children }: { children: React.ReactNode }) => {
-  const { minuteinput, startDate, endDate } = useContext(ToolbarContext);
+  const { minuteinput, startDate, endDate, selectedTaskId, updateTaskMru } = useContext(ToolbarContext);
   const [selectedCells, setSelectedCells] = useState<SelectedCellsType>({
     day: null,
     StartCell: null,
@@ -43,8 +57,10 @@ export const SelectedCellsProvider = ({ children }: { children: React.ReactNode 
   });
   const [targetTime, setTargetTime] = useState<string | null>(null);
   const [currentTimeData, setCurrentTimeData] = useState<Record<string, TimeEntry[]>>({});
-  const [mouseOverTasks, setMouseOverTasks] = useState<CellObject>(emptyCellObject);
+  const [hoveredTimeBlockId, setHoveredTimeBlockId] = useState<number | null>(null);
+  const [sidebarHoveredBlockId, setSidebarHoveredBlockId] = useState<number | null>(null);
   const [cellsData, setCellsData] = useState<Record<string, CellObject[]>>({});
+  const [pendingSelection, setPendingSelection] = useState<PendingSelection | null>(null);
 
   const fetchTimeBlocks = useCallback(() => {
     api.get('/time-blocks', { params: { start: startDate, end: endDate } })
@@ -106,7 +122,13 @@ export const SelectedCellsProvider = ({ children }: { children: React.ReactNode 
         const targetDay = target.getAttribute('data-day');
         const targetCellIndex = target.getAttribute('data-cell-index');
         if (targetDay && targetCellIndex) {
-          setMouseOverTasks(cellsData[targetDay]?.[Number(targetCellIndex)] ?? emptyCellObject);
+          const cellObj = cellsData[targetDay]?.[Number(targetCellIndex)];
+          const id = cellObj?.tasks?.[0]?.id;
+          if (id !== undefined) {
+            setHoveredTimeBlockId(id);
+          }
+        } else {
+          setHoveredTimeBlockId(null);
         }
       }
 
@@ -124,12 +146,26 @@ export const SelectedCellsProvider = ({ children }: { children: React.ReactNode 
       if (selectedCells.day && selectedCells.StartCell !== null && selectedCells.EndCell !== null) {
         const startIndex = Math.min(selectedCells.StartCell, selectedCells.EndCell);
         const endIndex = Math.max(selectedCells.StartCell, selectedCells.EndCell) + 1;
-        console.log('Selected time block:', {
+        const sel: PendingSelection = {
           day: selectedCells.day,
           startTime: startIndex * minuteinput,
           endTime: endIndex * minuteinput,
-        });
+        };
+        if (selectedTaskId) {
+          api.post('/time-blocks', {
+            task_id: Number(selectedTaskId),
+            date: sel.day,
+            start_time: sel.startTime,
+            end_time: sel.endTime,
+          }).then(() => {
+            updateTaskMru(selectedTaskId);
+            fetchTimeBlocks();
+          });
+        } else {
+          setPendingSelection(sel);
+        }
       }
+      setSelectedCells({ day: null, StartCell: null, EndCell: null });
     };
 
     window.addEventListener('mousedown', handleMouseDown);
@@ -142,9 +178,24 @@ export const SelectedCellsProvider = ({ children }: { children: React.ReactNode 
     };
   });
 
+  const submitTimeBlock = async (taskId: string) => {
+    if (!pendingSelection) return;
+    await api.post('/time-blocks', {
+      task_id: Number(taskId),
+      date: pendingSelection.day,
+      start_time: pendingSelection.startTime,
+      end_time: pendingSelection.endTime,
+    });
+    updateTaskMru(taskId);
+    setPendingSelection(null);
+    fetchTimeBlocks();
+  };
+
+  const clearPendingSelection = () => setPendingSelection(null);
+
   return (
     <SelectedCellsContext.Provider
-      value={{ selectedCells, cellsData, mouseOverTasks, currentTimeData, refreshTimeBlocks: fetchTimeBlocks }}
+      value={{ selectedCells, cellsData, hoveredTimeBlockId, sidebarHoveredBlockId, setSidebarHoveredBlockId, currentTimeData, refreshTimeBlocks: fetchTimeBlocks, pendingSelection, submitTimeBlock, clearPendingSelection }}
     >
       {children}
     </SelectedCellsContext.Provider>

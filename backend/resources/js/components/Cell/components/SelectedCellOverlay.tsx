@@ -1,7 +1,6 @@
 type GroupPosition = "start" | "end" | "middle";
 
 interface SelectedCellOverlayProps {
-  pickedColor: string;
   groupPosition: GroupPosition;
 }
 
@@ -11,13 +10,12 @@ function getBorderRadius(groupPosition: GroupPosition): string {
   return "0";
 }
 
-export const SelectedCellOverlay = ({ pickedColor, groupPosition }: SelectedCellOverlayProps) => {
+export const SelectedCellOverlay = ({ groupPosition }: SelectedCellOverlayProps) => {
   return (
     <div
-      className="overlay pointer-events-none z-[100] absolute inset-0"
+      className="overlay pointer-events-none z-[100] absolute inset-0 bg-blue-500/60"
       draggable={false}
       style={{
-        backgroundColor: pickedColor,
         borderRadius: getBorderRadius(groupPosition),
         animation: "overlayPulse 0.2s ease-in-out",
       }}

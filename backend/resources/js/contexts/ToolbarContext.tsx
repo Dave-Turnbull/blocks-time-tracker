@@ -19,14 +19,16 @@ interface ToolbarContextType {
   setStartDate: React.Dispatch<React.SetStateAction<string>>;
   endDate: string;
   setEndDate: React.Dispatch<React.SetStateAction<string>>;
-  pickedColor: string;
-  setPickedColor: React.Dispatch<React.SetStateAction<string>>;
   eraseTool: boolean;
   setEraseTool: React.Dispatch<React.SetStateAction<boolean>>;
   tasks: TaskRecord;
   setTasks: React.Dispatch<React.SetStateAction<TaskRecord>>;
   isDark: boolean;
   toggleTheme: () => void;
+  selectedTaskId: string | null;
+  setSelectedTaskId: (id: string | null) => void;
+  taskMruOrder: string[];
+  updateTaskMru: (taskId: string) => void;
 }
 
 export const ToolbarContext = createContext<ToolbarContextType>({} as ToolbarContextType);
@@ -36,9 +38,17 @@ export const ToolbarProvider = ({ children }: { children: React.ReactNode }) => 
   const [minuteinput, setMinuteInput] = useState(15);
   const [startDate, setStartDate] = useState(new Date().toISOString().substring(0, 10));
   const [endDate, setEndDate] = useState(new Date().toISOString().substring(0, 10));
-  const [pickedColor, setPickedColor] = useState('#000000');
   const [eraseTool, setEraseTool] = useState(false);
   const [tasks, setTasks] = useState<TaskRecord>({});
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [taskMruOrder, setTaskMruOrder] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('task_mru_order');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const [isDark, setIsDark] = useState<boolean>(() => {
     const saved = localStorage.getItem('theme');
@@ -62,6 +72,14 @@ export const ToolbarProvider = ({ children }: { children: React.ReactNode }) => 
 
   const toggleTheme = () => setIsDark((prev) => !prev);
 
+  const updateTaskMru = (taskId: string) => {
+    setTaskMruOrder((prev) => {
+      const next = [taskId, ...prev.filter((id) => id !== taskId)];
+      localStorage.setItem('task_mru_order', JSON.stringify(next));
+      return next;
+    });
+  };
+
   return (
     <ToolbarContext.Provider
       value={{
@@ -69,10 +87,11 @@ export const ToolbarProvider = ({ children }: { children: React.ReactNode }) => 
         minuteinput, setMinuteInput,
         startDate, setStartDate,
         endDate, setEndDate,
-        pickedColor, setPickedColor,
         eraseTool, setEraseTool,
         tasks, setTasks,
         isDark, toggleTheme,
+        selectedTaskId, setSelectedTaskId,
+        taskMruOrder, updateTaskMru,
       }}
     >
       {children}

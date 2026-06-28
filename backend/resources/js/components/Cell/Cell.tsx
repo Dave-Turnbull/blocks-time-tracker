@@ -1,5 +1,6 @@
 import { memo, useContext } from "react";
 import { ToolbarContext } from "../../contexts/ToolbarContext";
+import { SelectedCellsContext } from "../../contexts/SelectCellsContext";
 import { SelectedCellOverlay } from "./components/SelectedCellOverlay";
 import { CellObject } from "../../utils/timesToCells";
 
@@ -20,8 +21,11 @@ function getBorderRadius(groupPosition: GroupPosition): string {
 }
 
 export const Cell = memo(({ cellIndex, cell, dayToRender, selected, groupPosition }: CellProps) => {
-  const { pickedColor, eraseTool, tasks } = useContext(ToolbarContext);
+  const { eraseTool, tasks } = useContext(ToolbarContext);
+  const { sidebarHoveredBlockId } = useContext(SelectedCellsContext);
   const borderRadius = getBorderRadius(groupPosition);
+  const isSidebarHovered = sidebarHoveredBlockId !== null &&
+    cell.tasks.some((t) => t.id === sidebarHoveredBlockId);
 
   return (
     <div
@@ -34,7 +38,13 @@ export const Cell = memo(({ cellIndex, cell, dayToRender, selected, groupPositio
       style={borderRadius ? { borderRadius } : undefined}
     >
       {selected && !eraseTool && (
-        <SelectedCellOverlay pickedColor={pickedColor} groupPosition={groupPosition} />
+        <SelectedCellOverlay groupPosition={groupPosition} />
+      )}
+      {isSidebarHovered && (
+        <div
+          className="absolute inset-0 z-[50] pointer-events-none bg-yellow-300/50"
+          style={borderRadius ? { borderRadius } : undefined}
+        />
       )}
       {cell.tasks.length > 0 && !(selected && eraseTool) && (
         <div

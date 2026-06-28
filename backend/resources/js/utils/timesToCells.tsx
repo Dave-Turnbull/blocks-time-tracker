@@ -1,5 +1,6 @@
 
 interface TaskTime {
+  id?: number;
   startTime: number;
   endTime: number;
   taskID: string;
@@ -20,10 +21,9 @@ export class CellObject {
   getCellProps = (task, backgroundColor) => {
     return {
       id: `${task.startTime}`,
-      taskID: task.taskID,
       style: {
         left: `${(task.startTime / this.numOfMinutes) * 100}%`,
-        right: `${(1 - (task.endTime / this.numOfMinutes)) * 100}%`,//this may need changing
+        right: `${(1 - (task.endTime / this.numOfMinutes)) * 100}%`,
         backgroundColor: backgroundColor
       }
     }
@@ -42,6 +42,7 @@ const timesToCells = (timesArray: TaskTime[] | undefined, timePerCell: number, n
       const endCell = Math.ceil(endPositionInCell) - 1;
       for (let i = startCell; i <= endCell; i++) {
         cellsArray[i].newTaskTime({
+          id: event.id,
           startTime: Math.max(0, (event.startTime - cellsArray[i].startTime)),
           endTime: Math.min(timePerCell, (event.endTime - cellsArray[i].startTime)),
           taskID: event.taskID
