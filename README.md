@@ -46,7 +46,7 @@ Once running:
 |-----|------|
 | http://localhost:8000 | App (served by nginx → PHP-FPM) |
 | http://localhost:5173 | Vite dev server (HMR) |
-| localhost:3306 | MySQL (accessible from host) |
+| localhost:33061 | MySQL (accessible from host; container port 3306) |
 
 Subsequent `docker compose up` calls skip the first-run steps and start in a few seconds.
 

@@ -41,7 +41,7 @@
 
   /* Time grid */
   --color-cell:              170 170 170;   /* empty cell                */
-  --color-task-group:        207 46 39;     /* cell group border         */
+  --color-task-group:        214 219 228;   /* cell group background     */
 
   /* Opacity-mixed — used via bg-[var(--color-...)] */
   --color-danger-bg:         #fee2e2;       /* danger button             */
@@ -89,6 +89,9 @@
   --color-danger-fg:         252 165 165;
   --color-danger-line:       185 28 28;
   --color-danger-note:       248 113 113;
+
+  /* Time grid */
+  --color-task-group:        32 42 60;      /* cell group background     */
 
   /* Opacity-mixed */
   --color-danger-bg:         rgb(127 29 29 / 0.5);

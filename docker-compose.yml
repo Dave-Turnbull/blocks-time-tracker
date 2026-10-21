@@ -9,7 +9,7 @@ services:
     volumes:
       - db-data:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "33061:3306"
     networks:
       - app-network
     healthcheck:

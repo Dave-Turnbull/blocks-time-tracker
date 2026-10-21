@@ -38,8 +38,8 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
           const totalMinutes = groupIndex * cellGroupTotalTime[minuteinput];
 
           return (
-            <div key={groupIndex} className="cell-group-container m-[1px]">
-              <div className="cell-group flex flex-nowrap border-[3px] px-[2px] py-[1px] -mx-[2px] border-solid border-task-group relative rounded-xl">
+            <div key={groupIndex} className="cell-group-container m-[1px] bg-task-group rounded-xl p-[2px]">
+              <div className="cell-group flex flex-nowrap relative">
                 {groupOfCells.map((cell, index) => {
                   const cellIndex = index + start;
                   const isSelected =

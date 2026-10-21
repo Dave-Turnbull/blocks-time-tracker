@@ -102,7 +102,7 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 
 | Service | Image | Port | Purpose |
 |---------|-------|------|---------|
-| `db` | mysql:8.0 | 3306 | MySQL; health-checked before `app` starts |
+| `db` | mysql:8.0 | 33061→3306 | MySQL; host port 33061 avoids clashing with a local MySQL; health-checked before `app` starts |
 | `app` | docker/php/Dockerfile | — | PHP-FPM; bind-mount `./backend:/var/www` |
 | `nginx` | nginx:alpine | 8000 | Serves public/; proxies .php to `app:9000` |
 | `node` | node:20-alpine | 5173 | Vite dev server; waits for `package.json` then `npm run dev` |
