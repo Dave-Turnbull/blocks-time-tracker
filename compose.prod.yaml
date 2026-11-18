@@ -36,6 +36,15 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      # Optional additional login method — see backend/CLAUDE.md's
+      # "Authentik/OIDC login" section. No default for ENABLED: an operator
+      # opts in explicitly. The three secret-bearing vars have no default at
+      # all — unset means Authentik login 404s, never a silently-broken login.
+      AUTHENTIK_ENABLED: ${AUTHENTIK_ENABLED:-false}
+      AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID}
+      AUTHENTIK_CLIENT_SECRET: ${AUTHENTIK_CLIENT_SECRET}
+      AUTHENTIK_BASE_URL: ${AUTHENTIK_BASE_URL}
+      AUTHENTIK_REDIRECT_URI: ${AUTHENTIK_REDIRECT_URI}
     restart: unless-stopped
 
   nginx:

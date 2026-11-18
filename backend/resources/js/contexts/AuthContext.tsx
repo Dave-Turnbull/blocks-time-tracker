@@ -13,6 +13,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  loginWithToken: (token: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -69,8 +70,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Completes an Authentik/OIDC login: AuthentikController's callback
+  // issues a Sanctum token server-side (there's no session the SPA reads
+  // auth state from) and redirects the browser to /auth/callback?token=...;
+  // AuthCallback picks it up and hands it here.
+  const loginWithToken = async (token: string) => {
+    localStorage.setItem('auth_token', token);
+    await fetchUser();
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, loginWithToken }}>
       {children}
     </AuthContext.Provider>
   );

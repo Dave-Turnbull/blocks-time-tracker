@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import App from './App';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AuthCallback from './pages/AuthCallback';
 import './index.css';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -32,6 +33,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
           <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+          {/* Not a GuestRoute/ProtectedRoute: reachable mid-login, before AuthContext knows about the user yet. */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/*" element={<ProtectedRoute><App /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
