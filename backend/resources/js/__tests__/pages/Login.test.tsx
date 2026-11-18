@@ -4,10 +4,17 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Login from '../../pages/Login';
 import { AuthContext } from '../../contexts/AuthContext';
+import api from '../../lib/api';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+vi.mock('../../lib/api', () => ({
+    default: {
+        get: vi.fn().mockResolvedValue({ data: { enabled: false } }),
+    },
+}));
 
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async (importOriginal) => {
@@ -46,6 +53,7 @@ function renderLogin(ctx = makeAuthContext()) {
 describe('Login page', () => {
     beforeEach(() => {
         mockNavigate.mockClear();
+        vi.mocked(api.get).mockResolvedValue({ data: { enabled: false } } as never);
     });
 
     it('renders email, password fields and a submit button', () => {
@@ -126,5 +134,21 @@ describe('Login page', () => {
 
         resolve();
         await waitFor(() => expect(screen.getByRole('button', { name: /sign in/i })).toBeEnabled());
+    });
+
+    it('does not render the Authentik link when the backend reports it disabled', async () => {
+        vi.mocked(api.get).mockResolvedValue({ data: { enabled: false } } as never);
+        renderLogin();
+
+        await waitFor(() => expect(api.get).toHaveBeenCalledWith('/auth/authentik/enabled'));
+        expect(screen.queryByRole('link', { name: /log in with authentik/i })).not.toBeInTheDocument();
+    });
+
+    it('renders a full-page link to the Authentik redirect route when enabled', async () => {
+        vi.mocked(api.get).mockResolvedValue({ data: { enabled: true } } as never);
+        renderLogin();
+
+        const link = await screen.findByRole('link', { name: /log in with authentik/i });
+        expect(link).toHaveAttribute('href', '/auth/authentik/redirect');
     });
 });

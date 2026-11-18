@@ -1,14 +1,28 @@
-import { useState, FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, FormEvent } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import api from '../lib/api';
 
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(
+    searchParams.get('error') === 'authentik_failed' ? 'Authentik login failed. Please try again.' : ''
+  );
   const [isLoading, setIsLoading] = useState(false);
+  const [authentikEnabled, setAuthentikEnabled] = useState(false);
+
+  useEffect(() => {
+    // Public, unauthenticated — decides whether to render the Authentik
+    // link below. AUTHENTIK_ENABLED=false keeps this permanently hidden.
+    api
+      .get('/auth/authentik/enabled')
+      .then(({ data }) => setAuthentikEnabled(Boolean(data.enabled)))
+      .catch(() => setAuthentikEnabled(false));
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -73,6 +87,20 @@ const Login = () => {
             {isLoading ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
+
+        {authentikEnabled && (
+          <div className="mt-4">
+            {/* A plain <a href>, not a react-router Link or axios call — this
+               has to be a real full-page browser navigation to Authentik's
+               own domain, not a client-side route change. */}
+            <a
+              href="/auth/authentik/redirect"
+              className="w-full block text-center py-2 px-4 border border-line-strong rounded text-fg-secondary hover:bg-surface-hover transition-colors"
+            >
+              Log in with Authentik
+            </a>
+          </div>
+        )}
 
         <p className="mt-4 text-sm text-center text-fg-muted">
           No account?{' '}

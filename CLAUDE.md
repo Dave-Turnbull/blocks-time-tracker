@@ -32,27 +32,36 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │   │   ├── Controller.php              ← Base controller; MUST include `use AuthorizesRequests`
 │   │   │   └── Api/
 │   │   │       ├── AuthController.php      ← register, login, logout, user
-│   │   │       ├── TaskController.php      ← CRUD for tasks (scoped to authed user)
 │   │   │       └── TimeBlockController.php ← CRUD + date-range index with grouped response
+│   │   │   └── Web/
+│   │   │       └── AuthentikController.php ← Authentik/OIDC redirect, callback, link-account, enabled flag
 │   │   ├── Models/
-│   │   │   ├── User.php        ← HasApiTokens (Sanctum), hasMany Task + TimeBlock
-│   │   │   ├── Task.php        ← belongsTo User, hasMany TimeBlock; fillable: user_id, name, description, color
-│   │   │   └── TimeBlock.php   ← belongsTo Task + User; fillable: task_id, user_id, date, start_time, end_time
+│   │   │   ├── User.php               ← HasApiTokens (Sanctum), hasMany Task + TimeBlock + UserOAuthIdentity
+│   │   │   ├── Task.php                ← belongsTo User, hasMany TimeBlock; fillable: user_id, name, description, color
+│   │   │   ├── TimeBlock.php           ← belongsTo Task + User; fillable: task_id, user_id, date, start_time, end_time
+│   │   │   └── UserOAuthIdentity.php   ← belongsTo User; links a (provider, provider_user_id) pair to an account
+│   │   ├── Services/
+│   │   │   └── AuthentikLoginService.php ← Authentik account resolution: link/match/provision — see CLAUDE.md
 │   │   └── Policies/
 │   │       ├── TaskPolicy.php       ← update/delete: user_id must match
 │   │       └── TimeBlockPolicy.php  ← update/delete: user_id must match
 │   ├── database/
 │   │   ├── factories/
-│   │   │   ├── TaskFactory.php       ← generates random name/description/color (#rrggbb hex)
-│   │   │   └── TimeBlockFactory.php  ← has forUser(User) state that creates consistent task+user_id
+│   │   │   ├── TaskFactory.php               ← generates random name/description/color (#rrggbb hex)
+│   │   │   ├── TimeBlockFactory.php          ← has forUser(User) state that creates consistent task+user_id
+│   │   │   └── UserOAuthIdentityFactory.php  ← random provider_user_id, provider: 'authentik'
 │   │   └── migrations/
 │   │       ├── 2026_06_28_200000_create_tasks_table.php
-│   │       └── 2026_06_28_200001_create_time_blocks_table.php
+│   │       ├── 2026_06_28_200001_create_time_blocks_table.php
+│   │       ├── 2026_11_18_000000_make_users_password_nullable.php
+│   │       └── 2026_11_18_000001_create_user_oauth_identities_table.php
 │   ├── routes/
-│   │   ├── api.php  ← All JSON API routes (prefixed /api automatically)
-│   │   └── web.php  ← Single catch-all: returns app.blade.php for SPA routing
+│   │   ├── api.php  ← All JSON API routes (prefixed /api automatically) + public authentik/enabled flag
+│   │   └── web.php  ← Authentik redirect/callback/link-account routes, then the catch-all that returns app.blade.php for SPA routing
 │   ├── resources/
-│   │   ├── views/app.blade.php       ← Root HTML; @viteReactRefresh + @vite(['resources/js/main.tsx'])
+│   │   ├── views/
+│   │   │   ├── app.blade.php               ← Root HTML; @viteReactRefresh + @vite(['resources/js/main.tsx'])
+│   │   │   └── auth/link-account.blade.php ← Server-rendered (not SPA) Authentik "prove you own this account" form
 │   │   └── js/                       ← All React/TypeScript source
 │   │       ├── main.tsx              ← Entry point; BrowserRouter, AuthProvider, route guards
 │   │       ├── App.tsx               ← Root component; ToolbarProvider → SelectedCellsProvider → RenderDateRange + Toolbar
@@ -62,8 +71,9 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │       │   ├── ToolbarContext.tsx      ← Global toolbar state + fetches /api/tasks on mount
 │   │       │   └── SelectCellsContext.tsx  ← Mouse drag state; fetches /api/time-blocks per date range; exposes refreshTimeBlocks, pendingSelection, submitTimeBlock, clearPendingSelection
 │   │       ├── pages/
-│   │       │   ├── Login.tsx     ← Guest-only; calls AuthContext.login
-│   │       │   └── Register.tsx  ← Guest-only; calls AuthContext.register
+│   │       │   ├── Login.tsx        ← Guest-only; calls AuthContext.login; renders Authentik link when enabled
+│   │       │   ├── Register.tsx     ← Guest-only; calls AuthContext.register
+│   │       │   └── AuthCallback.tsx ← Route /auth/callback; stores the token from an Authentik login, then navigates home
 │   │       ├── components/
 │   │       │   ├── Toolbar.tsx             ← Controls: date range, cell size, theme toggle, logout
 │   │       │   ├── RenderDateRange.tsx     ← Iterates startDate→endDate, renders SingleDay per day
@@ -81,11 +91,13 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │           ├── setup.ts                               ← imports @testing-library/jest-dom
 │   │           ├── utils/timesToCells.test.ts             ← 15 tests for timesToCells
 │   │           ├── utils/utils.test.ts                    ← 16 tests for readableTime + readableDate
-│   │           ├── pages/Login.test.tsx                   ← 7 component tests (mocks AuthContext + react-router)
+│   │           ├── pages/Login.test.tsx                   ← 9 component tests (mocks AuthContext + react-router + api)
 │   │           ├── pages/Register.test.tsx                ← 7 component tests
+│   │           ├── pages/AuthCallback.test.tsx             ← 3 component tests
 │   │           └── components/TaskPickerModal.test.tsx    ← 10 component tests
 │   ├── tests/Feature/Api/
 │   │   ├── AuthTest.php       ← 14 tests: register, login, logout, /auth/user
+│   │   ├── AuthentikTest.php  ← 9 tests: enabled flag, redirect/callback gating, link/match/provision flows, throttling
 │   │   ├── TaskTest.php       ← 16 tests: CRUD + 401/403 isolation
 │   │   └── TimeBlockTest.php  ← 22 tests: CRUD + date range + grouped response shape
 │   ├── vite.config.ts    ← laravel-vite-plugin + @vitejs/plugin-react; HMR host=localhost (prevents Docker CORS)
@@ -147,6 +159,61 @@ All routes prefixed `/api`. Protected routes require `Authorization: Bearer <tok
 | POST | `/api/auth/login` | No | `{email, password}` → `{user, token}` |
 | POST | `/api/auth/logout` | Yes | Deletes current token → `{message}` |
 | GET | `/api/auth/user` | Yes | Returns authed user object |
+| GET | `/api/auth/authentik/enabled` | No | `{enabled: bool}` — whether the frontend should render the Authentik login link |
+
+### Authentik/OIDC login
+
+Optional, additional login method alongside password login (`AuthController`) —
+never a replacement. Config-gated by `AUTHENTIK_ENABLED` (see `config/services.php`'s
+`'authentik'` key); `false` by default, and the app behaves exactly as it did before
+this feature existed. Ported from `Dave-Turnbull/CommunityHub`'s equivalent feature;
+built on `laravel/socialite` + `socialiteproviders/authentik`.
+
+**Why these routes live in `routes/web.php`, not `api.php`:** `redirect()`/`callback()`
+are real full-page browser navigations to/from Authentik's own domain, not XHR calls
+from the SPA — they need the `web` middleware group's session to carry Socialite's
+OAuth state param (and, on the link-account path below, the pending identity). That's
+also why the final step hands the SPA a Sanctum token via a query string redirect
+rather than just `Auth::login()` + redirect — this app has no session the frontend
+reads auth state from (see AuthController/Frontend Data Flow above), only the Bearer
+token in `localStorage`.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/auth/authentik/redirect` | Browser nav → Authentik's authorize endpoint. 404 if disabled. |
+| GET | `/auth/authentik/callback` | Resolves the OIDC identity, then redirects to `/auth/callback?token=...` (new identity) or `/auth/link-account` (email matches an existing password account). Throttled 10/min. |
+| GET/POST | `/auth/link-account` | Server-rendered Blade form (not part of the React SPA — a `@csrf` form sidesteps wiring CSRF cookies into the otherwise-stateless axios client for this one rare fallback path). Requires the existing account's real password before linking. |
+
+**Account resolution** (`App\Services\AuthentikLoginService`), in order:
+1. Already linked (`user_oauth_identities` row for `(provider, provider_user_id)`,
+   `provider_user_id` being the stable OIDC `sub` claim) → log straight in.
+2. Email matches an existing password account, no link yet → **not** auto-linked
+   (trusting an IdP-asserted email alone would let a compromised/misconfigured IdP
+   hijack a local account). Redirects to `/auth/link-account` instead.
+3. No match → provisions a new `User` (`password: null`) and links it. Unlike
+   CommunityHub there's no separate "is OAuth signup open" setting — the single
+   `AUTHENTIK_ENABLED` flag already gates the whole feature.
+
+**Data model:** `user_oauth_identities` (`App\Models\UserOAuthIdentity`) is a join
+table, not columns on `users` — a user can hold a password *and* a linked Authentik
+identity at once. Its `$table` is set explicitly: Laravel's pluralizer mangles
+`UserOAuthIdentity` into `user_o_auth_identities` (splits on the capital-letter run
+in "OAuth"). `users.password` is nullable (migration
+`2026_11_18_000000_make_users_password_nullable`) for the same reason.
+
+**Frontend:** `Login.tsx` fetches `/api/auth/authentik/enabled` on mount and
+conditionally renders a plain `<a href="/auth/authentik/redirect">` (a real
+navigation, not a `Link`/axios call). `AuthCallback.tsx` (route `/auth/callback`)
+reads `?token=` from the query string, stores it via `AuthContext.loginWithToken`,
+and routes home — the same `localStorage` key (`auth_token`) and axios instance
+password login uses.
+
+**Env vars:** `AUTHENTIK_ENABLED`, `AUTHENTIK_CLIENT_ID`, `AUTHENTIK_CLIENT_SECRET`,
+`AUTHENTIK_BASE_URL`, `AUTHENTIK_REDIRECT_URI` (optional override, defaults to
+`{APP_URL}/auth/authentik/callback`). None have a working default — Authentik login
+404s until all of `AUTHENTIK_ENABLED=true` + client id/secret/base URL are set to a
+real Authentik application's OAuth2 provider config, whose redirect URI must be
+`{APP_URL}/auth/authentik/callback`.
 
 ### Tasks
 
@@ -226,7 +293,7 @@ docker compose exec app php artisan test
 - Uses SQLite in-memory (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:` in phpunit.xml)
 - All test classes use `RefreshDatabase`
 - Authenticate with `Sanctum::actingAs($user)`
-- **52 tests, all passing**
+- **77 tests, all passing**
 
 ### Frontend (Vitest) — run from `backend/`:
 ```bash
@@ -236,7 +303,7 @@ cd backend && npx vitest
 ```
 - Environment: jsdom with `@testing-library/react`
 - Setup: `backend/resources/js/__tests__/setup.ts` imports `@testing-library/jest-dom`
-- **55 tests, all passing**
+- **74 tests, all passing**
 
 ---
 
