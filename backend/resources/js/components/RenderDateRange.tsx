@@ -35,20 +35,22 @@ export const RenderDateRange = () => {
   }, [cellsData, currentFocusedDay]);
 
   useEffect(() => {
+    const wrapper = cellsWrapperRef.current;
+
     function updateScrollPosition() {
+      if (!wrapper) return;
+      const focusLine = wrapper.getBoundingClientRect().top + 20;
       const focusedDay = dayComponentRefArray.current
         .filter((el): el is HTMLDivElement => el !== null)
-        .find(
-          (el) =>
-            el.getBoundingClientRect().top < 20 &&
-            el.getBoundingClientRect().top + el.getBoundingClientRect().height > 20
-        );
+        .find((el) => {
+          const { top, bottom } = el.getBoundingClientRect();
+          return top < focusLine && bottom > focusLine;
+        });
       if (focusedDay) {
         setCurrentFocusedDay(focusedDay.dataset.date ?? "");
       }
     }
 
-    const wrapper = cellsWrapperRef.current;
     if (wrapper) {
       wrapper.addEventListener("scroll", updateScrollPosition, false);
     }
@@ -60,37 +62,43 @@ export const RenderDateRange = () => {
   }, []);
 
   return (
-    <div className="relative flex h-full overflow-hidden flex-1">
-      <div
-        className="cell-render-container h-full overflow-auto flex-[3] p-4"
-        ref={cellsWrapperRef}
-        onMouseOver={handleCellMouseOver}
-        onMouseLeave={handleCellMouseLeave}
-      >
-        <div className="sticky top-0 z-50 h-0 flex justify-end pointer-events-none">
-          {hoveredTime && (
-            <div className="bg-surface border border-line rounded-lg px-3 py-1.5 text-sm font-medium text-fg-secondary shadow-panel">
-              {readableTime(hoveredTime.start)} – {readableTime(hoveredTime.end)}
-            </div>
-          )}
-        </div>
-        {Object.keys(cellsData).map((key, index) => (
-          <div
-            key={key}
-            data-date={key}
-            ref={(ref) => { dayComponentRefArray.current[index] = ref; }}
-          >
-            <SingleDay
-              dayToRender={key}
-              singleDayData={cellsData[key]}
-              selectedCells={selectedCells.day === key ? selectedCells : undefined}
-              minuteinput={minuteinput}
-            />
+    <div className="relative flex h-full gap-2">
+      <div className="flex-1 min-w-0 border rounded-panel overflow-hidden">
+        <div
+          className="cell-render-container h-full overflow-auto p-4"
+          ref={cellsWrapperRef}
+          onMouseOver={handleCellMouseOver}
+          onMouseLeave={handleCellMouseLeave}
+        >
+          <div className="sticky top-0 z-50 h-0 flex justify-end pointer-events-none">
+            {hoveredTime && (
+              <div className="bg-canvas border rounded-control px-3 py-1 text-sm text-fg">
+                {readableTime(hoveredTime.start)} – {readableTime(hoveredTime.end)}
+              </div>
+            )}
           </div>
-        ))}
+          <div className="flex flex-col gap-8">
+            {Object.keys(cellsData).map((key, index) => (
+              <div
+                key={key}
+                data-date={key}
+                ref={(ref) => { dayComponentRefArray.current[index] = ref; }}
+              >
+                <SingleDay
+                  dayToRender={key}
+                  singleDayData={cellsData[key]}
+                  selectedCells={selectedCells.day === key ? selectedCells : undefined}
+                  minuteinput={minuteinput}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <div className="flex-1 bg-surface border-l border-line overflow-auto">
-        <TaskList singleDayDataOnScroll={currentFocusedDay} />
+      <div className="w-[375px] shrink-0 border rounded-panel overflow-hidden">
+        <div className="h-full overflow-auto">
+          <TaskList singleDayDataOnScroll={currentFocusedDay} />
+        </div>
       </div>
     </div>
   );

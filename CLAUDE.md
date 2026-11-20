@@ -75,13 +75,15 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │       │   ├── Register.tsx     ← Guest-only; calls AuthContext.register
 │   │       │   └── AuthCallback.tsx ← Route /auth/callback; stores the token from an Authentik login, then navigates home
 │   │       ├── components/
-│   │       │   ├── Toolbar.tsx             ← Controls: date range, cell size, theme toggle, logout
+│   │       │   ├── Toolbar.tsx             ← Left: task, cell size, dates, erase. Right: theme, new-task placeholder, account menu (logout)
 │   │       │   ├── RenderDateRange.tsx     ← Iterates startDate→endDate, renders SingleDay per day
 │   │       │   ├── SingleDay.tsx           ← Renders one column of Cell components for a date
-│   │       │   ├── TaskList.tsx            ← Sidebar task list (uses tasks from ToolbarContext)
+│   │       │   ├── TaskList.tsx            ← "Tasks" panel: time blocks for the focused day (exposed as data-day on the section)
 │   │       │   ├── TaskPickerModal.tsx     ← Modal after drag-select; pick task or create new; POSTs time block
+│   │       │   ├── Popover.tsx             ← Trigger + click-outside backdrop used by toolbar dropdowns
 │   │       │   └── Cell/
 │   │       │       ├── Cell.tsx                          ← Single time cell; renders task overlay if occupied
+│   │       │       ├── groupRadius.ts                    ← GroupPosition type + rounded-corner class per position
 │   │       │       └── components/SelectedCellOverlay.tsx ← Fixed blue highlight shown during mouse drag
 │   │       ├── utils/
 │   │       │   ├── timesToCells.tsx  ← Converts TimeEntry[] to CellObject[] (one per cell-slot in the day)
@@ -303,7 +305,7 @@ cd backend && npx vitest
 ```
 - Environment: jsdom with `@testing-library/react`
 - Setup: `backend/resources/js/__tests__/setup.ts` imports `@testing-library/jest-dom`
-- **74 tests, all passing**
+- **75 tests, all passing**
 
 ---
 
@@ -385,69 +387,46 @@ function renderMyComponent(ctxOverrides = {}) {
 
 All visual styling is centralised so the look can be changed by editing one file.
 
+### Aesthetic
+
+Quiet, flat, greyscale "wireframe" look. The chrome is white, one off-black and three greys; the only hue on screen comes from task colours. No shadows or gradients — shapes come from 1px hairline borders and a fixed set of radii. Large 48px titles over a tight cell grid. Uniformity is the priority: use only the tokens and scales below.
+
 ### Architecture
 
-- **`backend/resources/js/index.css`** — single source of truth for all design tokens as CSS custom properties. Edit `:root` for the light theme and `.dark` for dark.
-- **`backend/tailwind.config.js`** — maps CSS variables to Tailwind utility classes via `theme.extend.colors`, `fontFamily`, and `boxShadow`. No raw Tailwind colour names (e.g. `slate-700`) appear in components; they all use semantic tokens.
-- **`darkMode: 'class'`** — dark mode is toggled by adding/removing the `dark` class on `<html>` (see `ToolbarContext.tsx`). No `dark:` prefixed classes exist in components; both themes are handled entirely by the CSS variables.
+- **`backend/resources/js/index.css`** — single source of truth for colour tokens as CSS custom properties (`:root` = light, `.dark` = dark).
+- **`backend/tailwind.config.js`** — maps tokens to Tailwind classes (colours, `borderColor.DEFAULT`, `borderRadius`, `boxShadow.cell`). Components never use raw Tailwind colour names.
+- **`darkMode: 'class'`** — toggled via the `dark` class on `<html>` (`ToolbarContext.tsx`). No `dark:` classes in components.
 
-### Token categories
+### Colour tokens (bare `R G B` channels, so `bg-fg/35` etc. work)
 
-**Solid colours** — stored as bare `R G B` channels in CSS vars so Tailwind's opacity modifier syntax (e.g. `bg-surface/50`) works:
+Dark mode swaps `canvas`/`fg` and inverts the greys. Task colours never change.
 
-| CSS var | Tailwind class | Purpose |
-|---------|----------------|---------|
-| `--color-page` | `bg-page` | Outer app background |
-| `--color-surface` | `bg-surface` | Panels, toolbar, cards, modals |
-| `--color-surface-input` | `bg-surface-input` | Form inputs |
-| `--color-surface-btn` | `bg-surface-btn` | Default button background |
-| `--color-surface-btn-hover` | `hover:bg-surface-btn-hover` | Default button hover |
-| `--color-surface-hover` | `bg-surface-hover` | List-item hover state |
-| `--color-fg` | `text-fg` | Primary text |
-| `--color-fg-secondary` | `text-fg-secondary` | Secondary text, labels |
-| `--color-fg-muted` | `text-fg-muted` | Supporting text |
-| `--color-fg-subtle` | `text-fg-subtle` | Hints, empty-state copy |
-| `--color-line` | `border-line` | Default borders |
-| `--color-line-strong` | `border-line-strong` | Input / button borders |
-| `--color-accent` | `bg-accent` | Primary action buttons |
-| `--color-accent-hover` | `hover:bg-accent-hover` | Primary button hover |
-| `--color-accent-fg` | `text-accent-fg` | Text on accent backgrounds |
-| `--color-accent-text` | `text-accent-text` | Link / accent-coloured text |
-| `--color-accent-line` | `border-accent-line` | Borders on accent-tinted items |
-| `--color-ring` | `ring-ring` | Focus rings |
-| `--color-danger-fg` | `text-danger-fg` | Text on danger backgrounds |
-| `--color-danger-line` | `border-danger-line` | Danger/erase button border |
-| `--color-danger-note` | `text-danger-note` | Error message text |
-| `--color-cell` | `bg-cell` | Empty time-grid cells |
-| `--color-task-group` | `border-task-group` | Task-group grouping border |
+| CSS var | Tailwind | Light | Dark | Use |
+|---------|----------|-------|------|-----|
+| `--color-canvas` | `bg-canvas`, `text-canvas` | `#FFFFFF` | `#1A1A1A` | Page, panels, toolbar, inputs, modals; text on `bg-fg` |
+| `--color-fg` | `text-fg`, `bg-fg` | `#1A1A1A` | `#FFFFFF` | Titles, primary text, primary/inverted buttons, focus rings |
+| `--color-muted` | `text-muted`, `border` (default) | `#A6A6A6` | `#595959` | All borders, secondary text (dates, times, labels) |
+| `--color-cell` | `bg-cell` | `#D9D9D9` | `#262626` | Empty time cell |
+| `--color-hover` | `bg-hover` | `#F2F2F2` | `#262626` | Hover fill (list items, buttons) |
+| `--color-danger` | `text-danger`, `border-danger` | red | light red | Error messages only |
 
-**Full-value tokens (opacity baked in)** — Tailwind can't wrap these in its `rgb()` system, so components consume them as `bg-[var(--color-...)]` arbitrary values:
+Plain `border` already uses `muted` (`borderColor.DEFAULT`).
 
-| CSS var | Used for |
-|---------|---------|
-| `--color-danger-bg` | Erase-tool button background |
-| `--color-danger-bg-hover` | Erase-tool button hover |
-| `--color-danger-subtle` | Error-message background (Login/Register) |
-| `--color-surface-active` | Selected/hovered list-item background |
-| `--color-cell-label` | Time-group label text (opacity on black/white) |
+Interaction overlays: drag selection `bg-fg/35`, sidebar-hover link highlight `bg-fg/20`, modal backdrop `bg-black/40`.
 
-**Unchanged Tailwind utilities** (functional, same in both themes, not part of the token system):
-- `bg-black/50` — modal backdrop
-- `bg-blue-500/60` — drag-selection overlay on cells
-- `bg-yellow-300/50` — sidebar-hover overlay on cells
+### Scales
 
-### Typography & shadows
+- **Spacing:** 1, 2, 4, 8, 16, 32px only.
+- **Radii:** `rounded-panel` 16px (panels, modals, popovers), `rounded-group` 11px (cell-group border), `rounded-control` 8px (buttons, inputs, list items), `rounded-cell` 8px (outer corners of first/last cell in a group). Group = cell + 2px padding + 1px border so corners are concentric — keep that relationship if either changes. Popovers use 8px padding around 8px items for the same reason.
+- **Type:** titles `text-5xl` (3rem) with `leading-none`; body `text-sm`; labels/time labels `text-xs text-muted`.
+- **Cell border:** `shadow-cell` (inset 1px `muted`). It is a box-shadow, not a border, so task-colour fills (child elements) paint over it and the cell stays 40×40.
 
-- `--font-sans` — override to change the typeface (e.g. set to `'Inter'` after importing from Google Fonts).
-- `--shadow-panel` — used via `shadow-panel` Tailwind class on modals and dropdowns.
+### Layout
 
-### Adding a new theme
-
-1. Add a new class selector (e.g. `.theme-forest`) in `index.css` alongside `.dark`.
-2. Override any CSS vars you want to change.
-3. Apply the selector to `<html>` instead of / in addition to `dark` (update `ToolbarContext.tsx`).
-
----
+- `App.tsx`: `main` (flex-1, `p-2`) and a 64px `footer` toolbar (`Toolbar.tsx`), each with an inner `max-w-[1440px] mx-auto` wrapper.
+- `RenderDateRange.tsx`: blocks panel (flex-1) and 375px task panel, 8px apart, each `border rounded-panel` with internal scrolling.
+- Day: weekday (bold `fg`) + date (`muted`) on the left at 3rem; groups wrap left (4px column gap, 12px row gap); cells 2px apart. Each group's time label hangs from its bottom border (label top 3px above the line) with a `bg-canvas` backing, notching the line like a fieldset legend — the border wraps only the cells.
+- Toolbar: tools on the left, actions (theme, "+ New task" placeholder, account menu with log out) on the right. Shared dropdown behaviour lives in `Popover.tsx`.
 
 ## Pending Work
 

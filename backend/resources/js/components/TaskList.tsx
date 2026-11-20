@@ -25,15 +25,13 @@ const TaskList = ({ singleDayDataOnScroll }: TaskListProps) => {
   }, [hoveredTimeBlockId]);
 
   return (
-    <div className="p-4">
-      <h2 className="text-base font-semibold mb-3 pb-2 border-b text-fg-secondary border-line">
-        {singleDayDataOnScroll || 'Time blocks'}
-      </h2>
+    <section aria-label="Tasks" data-day={singleDayDataOnScroll} className="p-2">
+      <h2 className="text-5xl leading-none font-bold text-fg m-0 mb-1 px-2">Tasks</h2>
 
       {sorted.length === 0 ? (
-        <p className="text-xs text-fg-subtle">No time blocks for this day.</p>
+        <p className="text-sm text-muted m-0 px-2">No time blocks for this day.</p>
       ) : (
-        <ul className="list-none p-0 m-0 space-y-1.5">
+        <ul className="list-none p-0 m-0">
           {sorted.map((block) => {
             const task = tasks[block.taskID];
             if (!task) return null;
@@ -49,28 +47,27 @@ const TaskList = ({ singleDayDataOnScroll }: TaskListProps) => {
                 }}
                 onMouseEnter={() => block.id !== undefined && setSidebarHoveredBlockId(block.id)}
                 onMouseLeave={() => setSidebarHoveredBlockId(null)}
+                // 3px/7px + the always-present 1px border = 4px/8px of visual padding
                 className={
-                  'text-sm rounded px-3 py-2 border transition-colors ' +
+                  'text-sm rounded-control px-[7px] py-[3px] border ' +
                   (isHovered
-                    ? 'bg-[var(--color-surface-active)] border-accent-line'
-                    : 'bg-surface-hover border-line')
+                    ? 'bg-hover border-muted'
+                    : 'border-transparent hover:bg-hover hover:border-muted')
                 }
               >
                 <div className="flex items-start gap-2">
                   <span
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1"
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-[5px]"
                     style={{ backgroundColor: task.color }}
                   />
                   <div className="min-w-0">
                     <p className="font-medium m-0 text-fg truncate">{task.name}</p>
-                    {task.description && (
-                      <p className="text-xs m-0 mt-0.5 text-fg-muted truncate">
-                        {task.description}
-                      </p>
-                    )}
-                    <p className="text-xs m-0 mt-0.5 text-fg-muted">
+                    <p className="m-0 text-muted">
                       {readableTime(block.startTime)} – {readableTime(block.endTime)}
                     </p>
+                    {task.description && (
+                      <p className="m-0 text-muted truncate">{task.description}</p>
+                    )}
                   </div>
                 </div>
               </li>
@@ -78,7 +75,7 @@ const TaskList = ({ singleDayDataOnScroll }: TaskListProps) => {
           })}
         </ul>
       )}
-    </div>
+    </section>
   );
 };
 

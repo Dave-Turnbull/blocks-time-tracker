@@ -8,46 +8,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        page: 'rgb(var(--color-page) / <alpha-value>)',
+        canvas: 'rgb(var(--color-canvas) / <alpha-value>)',
+        fg:     'rgb(var(--color-fg) / <alpha-value>)',
+        muted:  'rgb(var(--color-muted) / <alpha-value>)',
+        cell:   'rgb(var(--color-cell) / <alpha-value>)',
+        hover:  'rgb(var(--color-hover) / <alpha-value>)',
+        danger: 'rgb(var(--color-danger) / <alpha-value>)',
+      },
 
-        surface: {
-          DEFAULT:    'rgb(var(--color-surface) / <alpha-value>)',
-          input:      'rgb(var(--color-surface-input) / <alpha-value>)',
-          btn:        'rgb(var(--color-surface-btn) / <alpha-value>)',
-          'btn-hover':'rgb(var(--color-surface-btn-hover) / <alpha-value>)',
-          hover:      'rgb(var(--color-surface-hover) / <alpha-value>)',
-        },
+      borderColor: {
+        DEFAULT: 'rgb(var(--color-muted) / <alpha-value>)',
+      },
 
-        fg: {
-          DEFAULT:   'rgb(var(--color-fg) / <alpha-value>)',
-          secondary: 'rgb(var(--color-fg-secondary) / <alpha-value>)',
-          muted:     'rgb(var(--color-fg-muted) / <alpha-value>)',
-          subtle:    'rgb(var(--color-fg-subtle) / <alpha-value>)',
-        },
-
-        line: {
-          DEFAULT: 'rgb(var(--color-line) / <alpha-value>)',
-          strong:  'rgb(var(--color-line-strong) / <alpha-value>)',
-        },
-
-        accent: {
-          DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)',
-          hover:   'rgb(var(--color-accent-hover) / <alpha-value>)',
-          fg:      'rgb(var(--color-accent-fg) / <alpha-value>)',
-          text:    'rgb(var(--color-accent-text) / <alpha-value>)',
-          line:    'rgb(var(--color-accent-line) / <alpha-value>)',
-        },
-
-        ring: 'rgb(var(--color-ring) / <alpha-value>)',
-
-        danger: {
-          fg:   'rgb(var(--color-danger-fg) / <alpha-value>)',
-          line: 'rgb(var(--color-danger-line) / <alpha-value>)',
-          note: 'rgb(var(--color-danger-note) / <alpha-value>)',
-        },
-
-        cell:         'rgb(var(--color-cell) / <alpha-value>)',
-        'task-group': 'rgb(var(--color-task-group) / <alpha-value>)',
+      // group = cell + 2px group padding + 1px group border, so corners stay concentric
+      borderRadius: {
+        panel:   '16px',
+        group:   '11px',
+        control: '8px',
+        cell:    '8px',
       },
 
       fontFamily: {
@@ -55,7 +33,8 @@ export default {
       },
 
       boxShadow: {
-        panel: 'var(--shadow-panel)',
+        // Inset so it sits under the task-colour fills, which are child elements.
+        cell: 'inset 0 0 0 1px rgb(var(--color-muted))',
       },
     },
   },

@@ -3,8 +3,7 @@ import { ToolbarContext } from "../../contexts/ToolbarContext";
 import { SelectedCellsContext } from "../../contexts/SelectCellsContext";
 import { SelectedCellOverlay } from "./components/SelectedCellOverlay";
 import { CellObject } from "../../utils/timesToCells";
-
-type GroupPosition = "start" | "end" | "middle";
+import { GroupPosition, groupRadiusClass } from "./groupRadius";
 
 interface CellProps {
   cellIndex: number;
@@ -14,16 +13,10 @@ interface CellProps {
   groupPosition: GroupPosition;
 }
 
-function getBorderRadius(groupPosition: GroupPosition): string {
-  if (groupPosition === "start") return "10px 0 0 10px";
-  if (groupPosition === "end") return "0 10px 10px 0";
-  return "";
-}
-
 export const Cell = memo(({ cellIndex, cell, dayToRender, selected, groupPosition }: CellProps) => {
   const { eraseTool, tasks } = useContext(ToolbarContext);
   const { sidebarHoveredBlockId } = useContext(SelectedCellsContext);
-  const borderRadius = getBorderRadius(groupPosition);
+  const radius = groupRadiusClass(groupPosition);
   const isSidebarHovered = sidebarHoveredBlockId !== null &&
     cell.tasks.some((t) => t.id === sidebarHoveredBlockId);
 
@@ -34,22 +27,19 @@ export const Cell = memo(({ cellIndex, cell, dayToRender, selected, groupPositio
       data-day={dayToRender}
       data-time={cell.startTime}
       data-cell-index={cellIndex}
-      className="w-10 h-10 bg-cell m-[1px] relative"
-      style={borderRadius ? { borderRadius } : undefined}
+      className={`w-10 h-10 bg-cell shadow-cell relative ${radius}`}
     >
       {selected && !eraseTool && (
         <SelectedCellOverlay groupPosition={groupPosition} />
       )}
       {isSidebarHovered && (
         <div
-          className="absolute inset-0 z-[50] pointer-events-none bg-yellow-300/50"
-          style={borderRadius ? { borderRadius } : undefined}
+          className={`absolute inset-0 z-[50] pointer-events-none bg-fg/20 ${radius}`}
         />
       )}
       {cell.tasks.length > 0 && !(selected && eraseTool) && (
         <div
-          className="absolute top-0 left-0 bottom-0 right-0 overflow-hidden pointer-events-none"
-          style={borderRadius ? { borderRadius } : undefined}
+          className={`absolute inset-0 overflow-hidden pointer-events-none ${radius}`}
         >
           {cell.tasks.map((task) => {
             const taskData = tasks[task.taskID];

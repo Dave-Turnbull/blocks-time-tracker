@@ -99,14 +99,14 @@ describe('TaskList', () => {
   it('applies highlight class when hoveredTimeBlockId matches a block id', () => {
     renderTaskList('2026-06-28', 10);
     const items = screen.getAllByRole('listitem');
-    expect(items[0].className).toMatch(/surface-active/);
-    expect(items[1].className).not.toMatch(/surface-active/);
+    expect(items[0]).toHaveClass('bg-hover');
+    expect(items[1]).not.toHaveClass('bg-hover');
   });
 
   it('does not apply highlight when hoveredTimeBlockId is null', () => {
     renderTaskList('2026-06-28', null);
     screen.getAllByRole('listitem').forEach((item) => {
-      expect(item.className).not.toMatch(/surface-active/);
+      expect(item).not.toHaveClass('bg-hover');
     });
   });
 
@@ -124,8 +124,13 @@ describe('TaskList', () => {
     expect(setSidebarHoveredBlockId).toHaveBeenCalledWith(null);
   });
 
-  it('shows the day as the heading', () => {
+  it('titles the panel "Tasks"', () => {
     renderTaskList('2026-06-28');
-    expect(screen.getByRole('heading')).toHaveTextContent('2026-06-28');
+    expect(screen.getByRole('heading')).toHaveTextContent('Tasks');
+  });
+
+  it('exposes the focused day on the panel', () => {
+    renderTaskList('2026-06-28');
+    expect(screen.getByRole('region', { name: 'Tasks' })).toHaveAttribute('data-day', '2026-06-28');
   });
 });

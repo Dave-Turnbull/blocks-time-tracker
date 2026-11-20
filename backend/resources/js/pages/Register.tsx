@@ -30,19 +30,19 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-page">
-      <div className="w-full max-w-sm p-8 bg-surface rounded-xl shadow border border-line">
+    <div className="min-h-screen flex items-center justify-center bg-canvas">
+      <div className="w-full max-w-sm p-8 bg-canvas rounded-panel border">
         <h1 className="text-2xl font-bold text-fg mb-6">Create account</h1>
 
         {error && (
-          <p className="mb-4 text-sm text-danger-note bg-[var(--color-danger-subtle)] rounded px-3 py-2">
+          <p className="mb-4 text-sm text-danger border border-danger rounded-control px-3 py-2">
             {error}
           </p>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-fg-secondary mb-1">
+            <label htmlFor="name" className="block text-sm font-medium text-fg mb-1">
               Name
             </label>
             <input
@@ -51,11 +51,11 @@ const Register = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-3 py-2 rounded border border-line-strong bg-surface-input text-fg focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3 py-2 rounded-control border bg-canvas text-fg focus:outline-none focus:ring-2 focus:ring-fg"
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-fg-secondary mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-fg mb-1">
               Email
             </label>
             <input
@@ -64,11 +64,11 @@ const Register = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 rounded border border-line-strong bg-surface-input text-fg focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3 py-2 rounded-control border bg-canvas text-fg focus:outline-none focus:ring-2 focus:ring-fg"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-fg-secondary mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-fg mb-1">
               Password
             </label>
             <input
@@ -78,21 +78,21 @@ const Register = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full px-3 py-2 rounded border border-line-strong bg-surface-input text-fg focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3 py-2 rounded-control border bg-canvas text-fg focus:outline-none focus:ring-2 focus:ring-fg"
             />
           </div>
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2 px-4 bg-accent hover:bg-accent-hover disabled:opacity-50 text-accent-fg font-medium rounded transition-colors"
+            className="w-full py-2 px-4 bg-fg disabled:opacity-50 text-canvas font-medium rounded-control transition-colors"
           >
             {isLoading ? 'Creating account…' : 'Create account'}
           </button>
         </form>
 
-        <p className="mt-4 text-sm text-center text-fg-muted">
+        <p className="mt-4 text-sm text-center text-muted">
           Already have an account?{' '}
-          <Link to="/login" className="text-accent-text hover:underline">
+          <Link to="/login" className="text-fg font-medium hover:underline">
             Sign in
           </Link>
         </p>
