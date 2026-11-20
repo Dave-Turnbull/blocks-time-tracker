@@ -38,7 +38,7 @@ function renderRange(
   goToTarget = { date: '2026-06-28', nonce: 0 },
 ) {
   return render(
-    <ToolbarContext.Provider value={{ tasks, minuteinput: 15, goToTarget } as any}>
+    <ToolbarContext.Provider value={{ tasks, minuteinput: 15, goToTarget, zoom: 1 } as any}>
       <SelectedCellsContext.Provider value={makeContextValue(cellsData)}>
         <RenderDateRange />
       </SelectedCellsContext.Provider>
@@ -53,7 +53,7 @@ function rerenderRange(
 ) {
   act(() => {
     rerender(
-      <ToolbarContext.Provider value={{ tasks, minuteinput: 15, goToTarget } as any}>
+      <ToolbarContext.Provider value={{ tasks, minuteinput: 15, goToTarget, zoom: 1 } as any}>
         <SelectedCellsContext.Provider value={makeContextValue(cellsData)}>
           <RenderDateRange />
         </SelectedCellsContext.Provider>

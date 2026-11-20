@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { ToolbarContext } from '../contexts/ToolbarContext';
+import { ToolbarContext, ZOOM_MIN, ZOOM_MAX } from '../contexts/ToolbarContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Popover } from './Popover';
 
@@ -13,6 +13,14 @@ const btnBase =
   "h-8 px-3 rounded-control text-sm border bg-canvas hover:bg-hover text-fg transition-colors " +
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-fg";
 
+// No horizontal padding: px-0 can't be stacked onto btnBase because px-3 may
+// win in the generated stylesheet regardless of class order.
+const btnIcon =
+  "h-8 w-8 p-1 rounded-control border bg-canvas hover:bg-hover text-fg transition-colors " +
+  "inline-flex items-center justify-center shrink-0 " +
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-fg " +
+  "disabled:opacity-40 disabled:pointer-events-none";
+
 const btnInverted =
   "h-8 px-3 rounded-control text-sm border border-fg bg-fg text-canvas transition-colors " +
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2 " +
@@ -24,6 +32,18 @@ const popoverClass = "absolute bottom-full mb-2 bg-canvas rounded-panel border p
 const popoverItemClass = (active: boolean) =>
   "w-full text-left px-2 py-1 rounded-control text-sm flex items-center gap-2 transition-colors " +
   (active ? "bg-hover text-fg" : "text-fg hover:bg-hover");
+
+const ZoomIcon = ({ out }: { out?: boolean }) => (
+  <svg
+    className="w-full h-full" viewBox="1 1 14 14" aria-hidden="true"
+    fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+  >
+    <circle cx="6.5" cy="6.5" r="4.75" />
+    <line x1="10.25" y1="10.25" x2="14" y2="14" />
+    <line x1="4.5" y1="6.5" x2="8.5" y2="6.5" />
+    {!out && <line x1="6.5" y1="4.5" x2="6.5" y2="8.5" />}
+  </svg>
+);
 
 const TaskSelector = () => {
   const { tasks, selectedTaskId, setSelectedTaskId, taskMruOrder } = useContext(ToolbarContext);
@@ -159,6 +179,9 @@ export const Toolbar = () => {
     setMinuteInput,
     goToTarget,
     goToDate,
+    zoom,
+    zoomIn,
+    zoomOut,
     eraseTool,
     setEraseTool,
     isDark,
@@ -244,6 +267,27 @@ export const Toolbar = () => {
           >
             Erase
           </button>
+
+          <div className="flex items-center gap-1">
+            <button
+              onClick={zoomOut}
+              disabled={zoom <= ZOOM_MIN}
+              className={btnIcon}
+              aria-label="Zoom out"
+              title="Zoom out"
+            >
+              <ZoomIcon out />
+            </button>
+            <button
+              onClick={zoomIn}
+              disabled={zoom >= ZOOM_MAX}
+              className={btnIcon}
+              aria-label="Zoom in"
+              title="Zoom in"
+            >
+              <ZoomIcon />
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">

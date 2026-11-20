@@ -16,6 +16,11 @@ export interface GoToTarget {
   nonce: number;
 }
 
+// Zoom sets the grid's minimum day-scale; the fill algorithm scales up from it.
+export const ZOOM_STEP = 0.25;
+export const ZOOM_MIN = 0.5;
+export const ZOOM_MAX = 3;
+
 interface ToolbarContextType {
   inputValue: number;
   setInputValue: React.Dispatch<React.SetStateAction<number>>;
@@ -23,6 +28,9 @@ interface ToolbarContextType {
   setMinuteInput: React.Dispatch<React.SetStateAction<number>>;
   goToTarget: GoToTarget;
   goToDate: (date: string) => void;
+  zoom: number;
+  zoomIn: () => void;
+  zoomOut: () => void;
   eraseTool: boolean;
   setEraseTool: React.Dispatch<React.SetStateAction<boolean>>;
   tasks: TaskRecord;
@@ -82,6 +90,10 @@ export const ToolbarProvider = ({ children }: { children: React.ReactNode }) => 
     setGoToTarget((prev) => ({ date, nonce: prev.nonce + 1 }));
   };
 
+  const [zoom, setZoom] = useState(1);
+  const zoomIn = () => setZoom((prev) => Math.min(ZOOM_MAX, prev + ZOOM_STEP));
+  const zoomOut = () => setZoom((prev) => Math.max(ZOOM_MIN, prev - ZOOM_STEP));
+
   const updateTaskMru = (taskId: string) => {
     setTaskMruOrder((prev) => {
       const next = [taskId, ...prev.filter((id) => id !== taskId)];
@@ -96,6 +108,7 @@ export const ToolbarProvider = ({ children }: { children: React.ReactNode }) => 
         inputValue, setInputValue,
         minuteinput, setMinuteInput,
         goToTarget, goToDate,
+        zoom, zoomIn, zoomOut,
         eraseTool, setEraseTool,
         tasks, setTasks,
         isDark, toggleTheme,

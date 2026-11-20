@@ -67,6 +67,39 @@ export const listDates = (startDate: string, endDate: string): string[] => {
     return dates;
 }
 
+export interface DayLayout {
+    scale: number;
+    groupsPerRow: number;
+}
+
+// How much to scale a day's cell groups so a whole number of them exactly
+// fills the container: fit as many as possible at minScale, then grow that
+// row to the full width. maxGroups caps the row at the day's group count so
+// a short day still fills the container. groupsPerRow is returned so the
+// caller can fix the row width explicitly — wrapping must follow this maths,
+// not the parent's live width, or resizes flicker between n and n-1 groups.
+export const computeDayLayout = (
+    containerWidth: number,
+    groupWidth: number,
+    columnGap: number,
+    minScale: number,
+    maxGroups: number,
+): DayLayout => {
+    if (containerWidth <= 0 || groupWidth <= 0 || minScale <= 0) {
+        return { scale: minScale, groupsPerRow: 1 };
+    }
+    // + columnGap on both sides turns "n groups + (n-1) gaps <= width" into a
+    // plain division; the epsilon absorbs float error at exact-fit boundaries.
+    const fit = Math.floor(
+        (containerWidth + columnGap * minScale) / ((groupWidth + columnGap) * minScale) + 1e-6
+    );
+    const n = Math.max(1, Math.min(fit, maxGroups));
+    return {
+        scale: Math.max(minScale, containerWidth / (n * groupWidth + (n - 1) * columnGap)),
+        groupsPerRow: n,
+    };
+}
+
 export interface DateWindow {
     start: string;
     end: string;

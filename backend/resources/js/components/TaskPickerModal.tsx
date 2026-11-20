@@ -74,7 +74,7 @@ export const TaskPickerModal = () => {
         className="bg-canvas rounded-panel border p-4 w-80 max-h-[80vh] flex flex-col"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <h2 className="text-5xl leading-none font-bold text-fg m-0 mb-1">Pick a task</h2>
+        <h2 className="text-3xl leading-none font-bold text-fg m-0 mb-1">Pick a task</h2>
         <p className="text-base text-fg/80 m-0 mb-4">
           {readableTime(pendingSelection.startTime)} – {readableTime(pendingSelection.endTime)}
           {' · '}{pendingSelection.day}

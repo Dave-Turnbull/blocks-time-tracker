@@ -14,9 +14,13 @@ interface SingleDayProps {
     EndCell: number | null;
   };
   minuteinput: number;
+  hoveredTime?: {
+    start: number;
+    end: number;
+  };
 }
 
-const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput }: SingleDayProps) => {
+const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput, hoveredTime }: SingleDayProps) => {
   const cellsInGroup = cellGroupTotalTime[minuteinput] / minuteinput;
 
   const startIndex = selectedCells
@@ -30,16 +34,24 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
 
   return (
     <div key={dayToRender} className="innercontainer" draggable={false}>
-      <h2 className="flex items-baseline gap-2 text-5xl leading-none m-0 mb-3 select-none" draggable={false}>
+      <h2 className="flex items-baseline gap-2 text-3xl leading-none m-0 mb-3 select-none" draggable={false}>
         <span className="font-bold text-fg">{weekday}</span>
         <span className="font-normal text-fg">
           {day}
           <sup>{suffix}</sup>
         </span>
         <span className="font-normal text-muted">{month} {year}</span>
+        {hoveredTime && (
+          <span className="ml-auto font-normal select-none">
+            <span className="text-fg">{readableTime(hoveredTime.start)}</span>
+            <span className="text-muted"> – {readableTime(hoveredTime.end)}</span>
+          </span>
+        )}
       </h2>
       {/* The time labels hang ~8px below each group's border; pb and gap-y leave room for that. */}
-      <div id="cell-container" className="cell-container flex flex-wrap gap-x-1 gap-y-3 pb-2" draggable={false}>
+      {/* Width is set from the layout maths (+1px float slack), NOT left to the
+          parent, so a mid-resize frame can't re-wrap the row and flicker. */}
+      <div id="cell-container" className="cell-container flex flex-wrap w-[calc(var(--day-scale,1)*var(--day-row-base,100000)*1px+1px)] max-w-none gap-x-[calc(var(--day-scale,1)*4px)] gap-y-3 pb-2" draggable={false}>
         {[...Array(Math.ceil(singleDayData.length / cellsInGroup))].map((_, groupIndex) => {
           const start = groupIndex * cellsInGroup;
           const end = start + cellsInGroup;
@@ -47,13 +59,13 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
           const totalMinutes = groupIndex * cellGroupTotalTime[minuteinput];
 
           return (
-            <div key={groupIndex} className="cell-group-container relative border border-outline rounded-group p-[2px] mb-1">
+            <div key={groupIndex} className="cell-group-container relative shadow-group rounded-group p-[calc(var(--day-scale,1)*3px)] mb-1">
               {/* Overlaps the bottom border by 3px with the canvas behind it, cutting a notch in the line.
                   left-[10px] starts the notch where the 11px corner curve ends. */}
-              <span className="timeLabel absolute top-[calc(100%-3px)] left-[10px] px-1 bg-canvas text-sm leading-none text-outline select-none pointer-events-none">
+              <span className="timeLabel absolute top-[calc(100%-3px)] left-[calc(var(--day-scale,1)*10px)] px-1 bg-canvas text-sm leading-none text-outline select-none pointer-events-none">
                 {readableTime(totalMinutes)}
               </span>
-              <div className="cell-group flex flex-nowrap gap-[2px] relative">
+              <div className="cell-group flex flex-nowrap gap-[calc(var(--day-scale,1)*2px)] relative">
                 {groupOfCells.map((cell, index) => {
                   const cellIndex = index + start;
                   const isSelected =
