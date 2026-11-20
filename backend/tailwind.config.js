@@ -11,6 +11,7 @@ export default {
         canvas: 'rgb(var(--color-canvas) / <alpha-value>)',
         fg:     'rgb(var(--color-fg) / <alpha-value>)',
         muted:  'rgb(var(--color-muted) / <alpha-value>)',
+        outline: 'rgb(var(--color-outline) / <alpha-value>)',
         cell:   'rgb(var(--color-cell) / <alpha-value>)',
         hover:  'rgb(var(--color-hover) / <alpha-value>)',
         danger: 'rgb(var(--color-danger) / <alpha-value>)',

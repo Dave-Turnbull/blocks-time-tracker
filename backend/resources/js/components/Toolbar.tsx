@@ -7,7 +7,7 @@ const inputClass =
   "h-8 px-2 rounded-control text-sm border bg-canvas text-fg " +
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-fg";
 
-const labelClass = "text-xs text-muted";
+const labelClass = "text-xs text-outline";
 
 const btnBase =
   "h-8 px-3 rounded-control text-sm border bg-canvas hover:bg-hover text-fg transition-colors " +

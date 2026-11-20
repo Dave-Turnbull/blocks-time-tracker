@@ -10,6 +10,7 @@
   --color-canvas:  255 255 255;   /* page, panels, toolbar, inputs     */
   --color-fg:      26 26 26;      /* titles, primary text, primary btn */
   --color-muted:   166 166 166;   /* all borders, secondary text       */
+  --color-outline: 166 166 166;   /* cell-group borders, time + toolbar labels */
   --color-cell:    217 217 217;   /* empty time cell                   */
   --color-hover:   242 242 242;   /* hover fill                        */
   --color-danger:  220 38 38;     /* error text only                   */
@@ -22,6 +23,7 @@
   --color-canvas:  26 26 26;
   --color-fg:      255 255 255;
   --color-muted:   89 89 89;
+  --color-outline: 255 255 255;
   --color-cell:    38 38 38;
   --color-hover:   38 38 38;
   --color-danger:  248 113 113;
