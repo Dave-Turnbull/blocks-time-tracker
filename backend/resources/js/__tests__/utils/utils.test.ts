@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readableTime, readableDate, readableDateParts, computeDayScale, addDays, daysBetween, listDates, extendDateWindow } from '../../utils/utils';
+import { readableTime, readableDate, readableDateParts, computeDayLayout, addDays, daysBetween, listDates, extendDateWindow } from '../../utils/utils';
 
 // ---------------------------------------------------------------------------
 // readableTime
@@ -214,51 +214,58 @@ describe('readableDateParts', () => {
 });
 
 // ---------------------------------------------------------------------------
-// computeDayScale
+// computeDayLayout
 // ---------------------------------------------------------------------------
 
 // 15-min cells: 4 cells per group -> 4*40 + 3*2 + 2*(2+1) = 172px wide, 4px gap.
 const GROUP = 172;
 const GAP = 4;
 
-describe('computeDayScale', () => {
+describe('computeDayLayout', () => {
     it('returns min scale when a whole number of groups fits exactly', () => {
         // 3 groups + 2 gaps = 524
-        expect(computeDayScale(524, GROUP, GAP, 1, 24)).toBe(1);
+        expect(computeDayLayout(524, GROUP, GAP, 1, 24)).toEqual({ scale: 1, groupsPerRow: 3 });
     });
 
     it('scales a full row up to fill the container', () => {
         // 4 groups + 3 gaps = 700 at scale 1; 800 wide -> scale 800/700
-        expect(computeDayScale(800, GROUP, GAP, 1, 24)).toBeCloseTo(800 / 700, 10);
+        const { scale, groupsPerRow } = computeDayLayout(800, GROUP, GAP, 1, 24);
+        expect(scale).toBeCloseTo(800 / 700, 10);
+        expect(groupsPerRow).toBe(4);
     });
 
     it('scales up past a wrap point when one fewer group fits', () => {
         // 699 can't fit 4 groups, so 3 fill it at a LARGER scale than 700's 4.
-        const wide = computeDayScale(700, GROUP, GAP, 1, 24);
-        const narrow = computeDayScale(699, GROUP, GAP, 1, 24);
-        expect(wide).toBe(1);
-        expect(narrow).toBeCloseTo(699 / 524, 10);
-        expect(narrow).toBeGreaterThan(wide);
+        const wide = computeDayLayout(700, GROUP, GAP, 1, 24);
+        const narrow = computeDayLayout(699, GROUP, GAP, 1, 24);
+        expect(wide).toEqual({ scale: 1, groupsPerRow: 4 });
+        expect(narrow.groupsPerRow).toBe(3);
+        expect(narrow.scale).toBeCloseTo(699 / 524, 10);
+        expect(narrow.scale).toBeGreaterThan(wide.scale);
     });
 
     it('never returns less than the min scale, even when one group overflows', () => {
-        expect(computeDayScale(100, GROUP, GAP, 1, 24)).toBe(1);
+        expect(computeDayLayout(100, GROUP, GAP, 1, 24)).toEqual({ scale: 1, groupsPerRow: 1 });
     });
 
     it('caps the row at the day group count so short days still fill', () => {
-        expect(computeDayScale(800, GROUP, GAP, 1, 2)).toBeCloseTo(800 / (2 * GROUP + GAP), 10);
+        const { scale, groupsPerRow } = computeDayLayout(800, GROUP, GAP, 1, 2);
+        expect(scale).toBeCloseTo(800 / (2 * GROUP + GAP), 10);
+        expect(groupsPerRow).toBe(2);
     });
 
     it('respects a larger min scale (zoom)', () => {
         // At min scale 2 a group needs 344px, so 800 fits 2 of them.
-        expect(computeDayScale(800, GROUP, GAP, 2, 24)).toBeCloseTo(800 / (2 * GROUP + GAP), 10);
+        const { scale, groupsPerRow } = computeDayLayout(800, GROUP, GAP, 2, 24);
+        expect(scale).toBeCloseTo(800 / (2 * GROUP + GAP), 10);
+        expect(groupsPerRow).toBe(2);
     });
 
     it('scale 1 result matches width/n with gaps included (max width check)', () => {
         // floor((W+gap)/(group+gap)) groups, scaled so the row is exactly W.
         const w = 1000;
-        const n = Math.floor((w + GAP) / (GROUP + GAP));
-        const scale = computeDayScale(w, GROUP, GAP, 1, 24);
+        const { scale, groupsPerRow: n } = computeDayLayout(w, GROUP, GAP, 1, 24);
+        expect(n).toBe(Math.floor((w + GAP) / (GROUP + GAP)));
         expect(n * GROUP * scale + (n - 1) * GAP * scale).toBeCloseTo(w, 6);
     });
 });

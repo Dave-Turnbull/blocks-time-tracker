@@ -3,7 +3,7 @@ import SingleDay from "./SingleDay";
 import { SelectedCellsContext } from "../contexts/SelectCellsContext";
 import TaskList from "./TaskList";
 import { ToolbarContext } from "../contexts/ToolbarContext";
-import { readableTime, computeDayScale } from "../utils/utils";
+import { readableTime, computeDayLayout } from "../utils/utils";
 import { cellGroupTotalTime } from "../data/cellGroupTotalTime";
 
 // Distance from the top/bottom of the scroll content at which more days load.
@@ -29,7 +29,10 @@ export const RenderDateRange = () => {
   const cellsWrapperRef = useRef<HTMLDivElement>(null);
   const daysWrapperRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [dayScale, setDayScale] = useState(1);
+  // rowBase is the unscaled width of one full row (n groups + gaps); the cell
+  // containers set their width from it so wrapping is decided by this state,
+  // never by the parent's live width mid-resize.
+  const [dayLayout, setDayLayout] = useState({ scale: 1, rowBase: 100000 });
 
   const dates = Object.keys(cellsData);
   const datesKey = dates.join(",");
@@ -68,11 +71,21 @@ export const RenderDateRange = () => {
       (cellsInGroup - 1) * CELL_GAP_PX +
       2 * (GROUP_PAD_PX + GROUP_BORDER_PX);
     const maxGroups = Math.ceil(1440 / groupMinutes);
-    const update = () => {
-      setDayScale(computeDayScale(el.clientWidth, groupWidth, COLUMN_GAP_PX, zoom, maxGroups));
+    const update = (width: number) => {
+      // -1px of slack: the solved scale fills the width exactly in real
+      // numbers, so without it float/subpixel rounding can poke past the
+      // container at exact-fit widths.
+      const { scale, groupsPerRow } = computeDayLayout(width - 1, groupWidth, COLUMN_GAP_PX, zoom, maxGroups);
+      setDayLayout({ scale, rowBase: groupsPerRow * groupWidth + (groupsPerRow - 1) * COLUMN_GAP_PX });
     };
-    update();
-    const observer = new ResizeObserver(update);
+    // getBoundingClientRect, not clientWidth: clientWidth rounds to an
+    // integer, which overshoots fractional widths (browser zoom / display
+    // scaling) and wraps the last group.
+    update(el.getBoundingClientRect().width);
+    const observer = new ResizeObserver((entries) => {
+      const box = entries[0]?.contentBoxSize?.[0];
+      update(box ? box.inlineSize : el.getBoundingClientRect().width);
+    });
     observer.observe(el);
     return () => observer.disconnect();
   }, [minuteinput, zoom]);
@@ -222,7 +235,7 @@ export const RenderDateRange = () => {
           <div
             className="flex flex-col gap-8"
             ref={daysWrapperRef}
-            style={{ '--day-scale': dayScale } as React.CSSProperties}
+            style={{ '--day-scale': dayLayout.scale, '--day-row-base': dayLayout.rowBase } as React.CSSProperties}
           >
             {dates.map((key) => (
               <div

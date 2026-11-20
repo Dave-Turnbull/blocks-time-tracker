@@ -39,7 +39,9 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
         <span className="font-normal text-muted">{month} {year}</span>
       </h2>
       {/* The time labels hang ~8px below each group's border; pb and gap-y leave room for that. */}
-      <div id="cell-container" className="cell-container flex flex-wrap gap-x-[calc(var(--day-scale,1)*4px)] gap-y-[calc(var(--day-scale,1)*12px)] pb-2" draggable={false}>
+      {/* Width is set from the layout maths (+1px float slack), NOT left to the
+          parent, so a mid-resize frame can't re-wrap the row and flicker. */}
+      <div id="cell-container" className="cell-container flex flex-wrap w-[calc(var(--day-scale,1)*var(--day-row-base,100000)*1px+1px)] max-w-none gap-x-[calc(var(--day-scale,1)*4px)] gap-y-[calc(var(--day-scale,1)*12px)] pb-2" draggable={false}>
         {[...Array(Math.ceil(singleDayData.length / cellsInGroup))].map((_, groupIndex) => {
           const start = groupIndex * cellsInGroup;
           const end = start + cellsInGroup;
