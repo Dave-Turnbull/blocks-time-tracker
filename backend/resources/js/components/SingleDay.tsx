@@ -49,7 +49,7 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
           const totalMinutes = groupIndex * cellGroupTotalTime[minuteinput];
 
           return (
-            <div key={groupIndex} className="cell-group-container relative shadow-group rounded-group p-[calc(var(--day-scale,1)*3px)] mb-[calc(var(--day-scale,1)*4px)]">
+            <div key={groupIndex} className="cell-group-container relative shadow-group rounded-group p-[calc(var(--day-scale,1)*3px)] mb-1">
               {/* Overlaps the bottom border by 3px with the canvas behind it, cutting a notch in the line.
                   left-[10px] starts the notch where the 11px corner curve ends. */}
               <span className="timeLabel absolute top-[calc(100%-3px)] left-[calc(var(--day-scale,1)*10px)] px-1 bg-canvas text-sm leading-none text-outline select-none pointer-events-none">

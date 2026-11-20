@@ -13,6 +13,14 @@ const btnBase =
   "h-8 px-3 rounded-control text-sm border bg-canvas hover:bg-hover text-fg transition-colors " +
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-fg";
 
+// No horizontal padding: px-0 can't be stacked onto btnBase because px-3 may
+// win in the generated stylesheet regardless of class order.
+const btnIcon =
+  "h-8 w-8 p-1 rounded-control border bg-canvas hover:bg-hover text-fg transition-colors " +
+  "inline-flex items-center justify-center shrink-0 " +
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-fg " +
+  "disabled:opacity-40 disabled:pointer-events-none";
+
 const btnInverted =
   "h-8 px-3 rounded-control text-sm border border-fg bg-fg text-canvas transition-colors " +
   "focus:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2 " +
@@ -27,7 +35,7 @@ const popoverItemClass = (active: boolean) =>
 
 const ZoomIcon = ({ out }: { out?: boolean }) => (
   <svg
-    width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"
+    className="w-full h-full" viewBox="1 1 14 14" aria-hidden="true"
     fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
   >
     <circle cx="6.5" cy="6.5" r="4.75" />
@@ -264,7 +272,7 @@ export const Toolbar = () => {
             <button
               onClick={zoomOut}
               disabled={zoom <= ZOOM_MIN}
-              className={`${btnBase} w-8 px-0 inline-flex items-center justify-center disabled:opacity-40 disabled:pointer-events-none`}
+              className={btnIcon}
               aria-label="Zoom out"
               title="Zoom out"
             >
@@ -273,7 +281,7 @@ export const Toolbar = () => {
             <button
               onClick={zoomIn}
               disabled={zoom >= ZOOM_MAX}
-              className={`${btnBase} w-8 px-0 inline-flex items-center justify-center disabled:opacity-40 disabled:pointer-events-none`}
+              className={btnIcon}
               aria-label="Zoom in"
               title="Zoom in"
             >
