@@ -26,20 +26,40 @@ function makeContextValue(cellsData: Record<string, unknown[]>) {
     setSidebarHoveredBlockId: vi.fn(),
     currentTimeData: timeData,
     refreshTimeBlocks: vi.fn(),
+    extendWindow: vi.fn(),
     pendingSelection: null,
     submitTimeBlock: vi.fn(),
     clearPendingSelection: vi.fn(),
   } as any;
 }
 
-function renderRange(cellsData: Record<string, unknown[]>) {
+function renderRange(
+  cellsData: Record<string, unknown[]>,
+  goToTarget = { date: '2026-06-28', nonce: 0 },
+) {
   return render(
-    <ToolbarContext.Provider value={{ tasks, minuteinput: 15 } as any}>
+    <ToolbarContext.Provider value={{ tasks, minuteinput: 15, goToTarget } as any}>
       <SelectedCellsContext.Provider value={makeContextValue(cellsData)}>
         <RenderDateRange />
       </SelectedCellsContext.Provider>
     </ToolbarContext.Provider>
   );
+}
+
+function rerenderRange(
+  rerender: (ui: React.ReactElement) => void,
+  cellsData: Record<string, unknown[]>,
+  goToTarget = { date: '2026-06-28', nonce: 0 },
+) {
+  act(() => {
+    rerender(
+      <ToolbarContext.Provider value={{ tasks, minuteinput: 15, goToTarget } as any}>
+        <SelectedCellsContext.Provider value={makeContextValue(cellsData)}>
+          <RenderDateRange />
+        </SelectedCellsContext.Provider>
+      </ToolbarContext.Provider>
+    );
+  });
 }
 
 const sidebarDay = () => screen.getByRole('region', { name: 'Tasks' }).getAttribute('data-day');
@@ -58,32 +78,37 @@ describe('RenderDateRange', () => {
     expect(sidebarDay()).toBe('');
 
     // cellsData arrives from the API
-    act(() => {
-      rerender(
-        <ToolbarContext.Provider value={{ tasks, minuteinput: 15 } as any}>
-          <SelectedCellsContext.Provider value={makeContextValue({ '2026-06-28': [] })}>
-            <RenderDateRange />
-          </SelectedCellsContext.Provider>
-        </ToolbarContext.Provider>
-      );
-    });
+    rerenderRange(rerender, { '2026-06-28': [] });
 
     expect(sidebarDay()).toBe('2026-06-28');
   });
 
-  it('resets the sidebar to the first available day when the date range changes', () => {
+  it('resets the sidebar to the first available day when the date window changes', () => {
     const { rerender } = renderRange({ '2026-06-28': [], '2026-06-29': [] });
     expect(sidebarDay()).toBe('2026-06-28');
 
-    act(() => {
-      rerender(
-        <ToolbarContext.Provider value={{ tasks, minuteinput: 15 } as any}>
-          <SelectedCellsContext.Provider value={makeContextValue({ '2026-07-01': [], '2026-07-02': [] })}>
-            <RenderDateRange />
-          </SelectedCellsContext.Provider>
-        </ToolbarContext.Provider>
-      );
-    });
+    rerenderRange(rerender, { '2026-07-01': [], '2026-07-02': [] });
+
+    expect(sidebarDay()).toBe('2026-07-01');
+  });
+
+  it('focuses the go-to date when a new go-to target fires', () => {
+    const days = { '2026-06-28': [], '2026-06-29': [], '2026-06-30': [] };
+    const { rerender } = renderRange(days);
+    expect(sidebarDay()).toBe('2026-06-28');
+
+    rerenderRange(rerender, days, { date: '2026-06-30', nonce: 1 });
+
+    expect(sidebarDay()).toBe('2026-06-30');
+  });
+
+  it('does not re-focus the go-to date on unrelated re-renders with the same nonce', () => {
+    const days = { '2026-06-28': [], '2026-06-29': [] };
+    const { rerender } = renderRange(days);
+
+    // Same nonce, new window that no longer contains the focused day: the
+    // fallback (first available day) should win, not the stale go-to date.
+    rerenderRange(rerender, { '2026-07-01': [], '2026-07-02': [] });
 
     expect(sidebarDay()).toBe('2026-07-01');
   });

@@ -157,10 +157,8 @@ export const Toolbar = () => {
     inputValue,
     setInputValue,
     setMinuteInput,
-    startDate,
-    setStartDate,
-    endDate,
-    setEndDate,
+    goToTarget,
+    goToDate,
     eraseTool,
     setEraseTool,
     isDark,
@@ -193,12 +191,13 @@ export const Toolbar = () => {
     setInputValue(roundedValue);
   };
 
-  const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setStartDate(event.target.value);
-  };
+  const [goToValue, setGoToValue] = useState(goToTarget.date);
 
-  const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEndDate(event.target.value);
+  const handleGoToSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (goToValue) {
+      goToDate(goToValue);
+    }
   };
 
   return (
@@ -224,24 +223,19 @@ export const Toolbar = () => {
             </button>
           </form>
 
-          <label className={`${labelClass} flex items-center gap-2`}>
-            Start
+          <form onSubmit={handleGoToSubmit} className="flex items-center gap-2">
+            <label htmlFor="go-to-date" className={labelClass}>Go to</label>
             <input
+              id="go-to-date"
               type="date"
-              value={startDate}
-              onChange={handleStartDateChange}
+              value={goToValue}
+              onChange={(event) => setGoToValue(event.target.value)}
               className={inputClass}
             />
-          </label>
-          <label className={`${labelClass} flex items-center gap-2`}>
-            End
-            <input
-              type="date"
-              value={endDate}
-              onChange={handleEndDateChange}
-              className={inputClass}
-            />
-          </label>
+            <button type="submit" className={btnBase}>
+              Go
+            </button>
+          </form>
 
           <button
             onClick={() => setEraseTool(!eraseTool)}

@@ -68,15 +68,15 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │       ├── lib/api.ts            ← Axios instance (baseURL /api); attaches Bearer token; redirects /login on 401
 │   │       ├── contexts/
 │   │       │   ├── AuthContext.tsx         ← User state; login/register/logout; fetches /api/auth/user on mount
-│   │       │   ├── ToolbarContext.tsx      ← Global toolbar state + fetches /api/tasks on mount
-│   │       │   └── SelectCellsContext.tsx  ← Mouse drag state; fetches /api/time-blocks per date range; exposes refreshTimeBlocks, pendingSelection, submitTimeBlock, clearPendingSelection
+│   │       │   ├── ToolbarContext.tsx      ← Global toolbar state (incl. goToTarget for "Go to" date) + fetches /api/tasks on mount
+│   │       │   └── SelectCellsContext.tsx  ← Mouse drag state; owns the sliding 30-day window and fetches /api/time-blocks in 10-day chunks; exposes refreshTimeBlocks, extendWindow, pendingSelection, submitTimeBlock, clearPendingSelection
 │   │       ├── pages/
 │   │       │   ├── Login.tsx        ← Guest-only; calls AuthContext.login; renders Authentik link when enabled
 │   │       │   ├── Register.tsx     ← Guest-only; calls AuthContext.register
 │   │       │   └── AuthCallback.tsx ← Route /auth/callback; stores the token from an Authentik login, then navigates home
 │   │       ├── components/
-│   │       │   ├── Toolbar.tsx             ← Left: task, cell size, dates, erase. Right: theme, new-task placeholder, account menu (logout)
-│   │       │   ├── RenderDateRange.tsx     ← Iterates startDate→endDate, renders SingleDay per day
+│   │       │   ├── Toolbar.tsx             ← Left: task, cell size, go-to date, erase. Right: theme, new-task placeholder, account menu (logout)
+│   │       │   ├── RenderDateRange.tsx     ← Infinite day scroller: renders the window's SingleDays, extends it at the scroll edges with scroll anchoring, handles go-to scrolls
 │   │       │   ├── SingleDay.tsx           ← Renders one column of Cell components for a date
 │   │       │   ├── TaskList.tsx            ← "Tasks" panel: time blocks for the focused day (exposed as data-day on the section)
 │   │       │   ├── TaskPickerModal.tsx     ← Modal after drag-select; pick task or create new; POSTs time block
@@ -87,16 +87,19 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │       │       └── components/SelectedCellOverlay.tsx ← Fixed blue highlight shown during mouse drag
 │   │       ├── utils/
 │   │       │   ├── timesToCells.tsx  ← Converts TimeEntry[] to CellObject[] (one per cell-slot in the day)
-│   │       │   ├── utils.ts          ← readableDate(dateString), readableTime(minutes)
+│   │       │   ├── utils.ts          ← readableDate, readableTime, addDays, daysBetween, listDates, extendDateWindow
 │   │       │   └── updateData.ts     ← (legacy helper, not currently used by API-backed flow)
 │   │       └── __tests__/
 │   │           ├── setup.ts                               ← imports @testing-library/jest-dom
 │   │           ├── utils/timesToCells.test.ts             ← 15 tests for timesToCells
-│   │           ├── utils/utils.test.ts                    ← 16 tests for readableTime + readableDate
+│   │           ├── utils/utils.test.ts                    ← 30 tests for readable/date-window helpers
 │   │           ├── pages/Login.test.tsx                   ← 9 component tests (mocks AuthContext + react-router + api)
 │   │           ├── pages/Register.test.tsx                ← 7 component tests
 │   │           ├── pages/AuthCallback.test.tsx             ← 3 component tests
-│   │           └── components/TaskPickerModal.test.tsx    ← 10 component tests
+│   │           ├── components/TaskPickerModal.test.tsx    ← 10 component tests
+│   │           ├── components/TaskList.test.tsx           ← 12 component tests
+│   │           ├── components/RenderDateRange.test.tsx    ← 5 tests: sidebar focused-day sync + go-to focus
+│   │           └── components/Toolbar.test.tsx            ← 3 tests: go-to date control
 │   ├── tests/Feature/Api/
 │   │   ├── AuthTest.php       ← 14 tests: register, login, logout, /auth/user
 │   │   ├── AuthentikTest.php  ← 9 tests: enabled flag, redirect/callback gating, link/match/provision flows, throttling
@@ -258,7 +261,7 @@ Note: `taskID` is a string (the frontend keyed record uses string IDs). The `tas
 
 1. **Auth bootstrap** (`AuthContext`): on mount, if `auth_token` in localStorage → GET `/api/auth/user` → sets user state.
 2. **Task loading** (`ToolbarContext`): on mount → GET `/api/tasks` → converts array to `Record<string, Task>` keyed by `String(task.id)`.
-3. **Time block loading** (`SelectCellsContext`): `fetchTimeBlocks` runs whenever `startDate`, `endDate`, or `minuteinput` changes → GET `/api/time-blocks?start=&end=` → builds `cellsData` (CellObject[][]) and `currentTimeData` (TimeEntry[][]) for every date in range, including empty days.
+3. **Time block loading** (`SelectCellsContext`): a sliding `dateWindow` (max 30 days, initially today−10 → today+19) drives everything. An effect fetches any not-yet-loaded days in the window as one contiguous GET `/api/time-blocks?start=&end=` and caches them in `loadedDays` (kept beyond the window so scrolling back doesn't refetch). `cellsData`/`currentTimeData` are derived with `useMemo` from window + cache + `minuteinput`; unfetched days render as empty grids of identical height, so there's no layout shift when data lands. `extendWindow('past'|'future')` grows the window by 10 days and, past 30, slides it instead (`extendDateWindow` in utils). The toolbar's `goToTarget` (date + nonce) re-centres the window; `RenderDateRange` extends it from scroll-edge proximity (<400px) with manual scroll anchoring ([overflow-anchor:none] + anchor-day offset correction), and scrolls the go-to day to the top of the viewport once per nonce.
 4. **Cell rendering**: `RenderDateRange` → `SingleDay` → `Cell`. Each `Cell` receives a `CellObject` and reads tasks from `ToolbarContext.tasks`.
 
 **Key types:**
@@ -305,7 +308,7 @@ cd backend && npx vitest
 ```
 - Environment: jsdom with `@testing-library/react`
 - Setup: `backend/resources/js/__tests__/setup.ts` imports `@testing-library/jest-dom`
-- **75 tests, all passing**
+- **94 tests, all passing**
 
 ---
 

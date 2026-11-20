@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Cell } from "./Cell/Cell.tsx";
 import { cellGroupTotalTime } from "../data/cellGroupTotalTime.tsx";
-import { readableDate, readableTime } from "../utils/utils.ts";
+import { readableDateParts, readableTime } from "../utils/utils.ts";
 import { CellObject } from "../utils/timesToCells.tsx";
 import { GroupPosition } from "./Cell/groupRadius.ts";
 
@@ -26,13 +26,17 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
     ? Math.max(selectedCells.StartCell ?? 0, selectedCells.EndCell ?? 0)
     : null;
 
-  const [weekday, ...dateParts] = readableDate(dayToRender).split(" ");
+  const { weekday, day, suffix, month, year } = readableDateParts(dayToRender);
 
   return (
     <div key={dayToRender} className="innercontainer" draggable={false}>
       <h2 className="flex items-baseline gap-2 text-5xl leading-none m-0 mb-3 select-none" draggable={false}>
         <span className="font-bold text-fg">{weekday}</span>
-        <span className="font-normal text-muted">{dateParts.join(" ")}</span>
+        <span className="font-normal text-fg">
+          {day}
+          <sup>{suffix}</sup>
+        </span>
+        <span className="font-normal text-muted">{month} {year}</span>
       </h2>
       {/* The time labels hang ~8px below each group's border; pb and gap-y leave room for that. */}
       <div id="cell-container" className="cell-container flex flex-wrap gap-x-1 gap-y-3 pb-2" draggable={false}>
