@@ -6,10 +6,14 @@ import { TaskPickerModal } from "./components/TaskPickerModal";
 
 const App = () => {
   return (
-    <div draggable={false} className="relative h-screen overflow-hidden flex flex-col justify-between bg-page">
+    <div draggable={false} className="relative h-screen overflow-hidden flex flex-col bg-canvas text-fg">
       <ToolbarProvider>
         <SelectedCellsProvider>
-          <RenderDateRange />
+          <main className="flex-1 min-h-0 p-2">
+            <div className="h-full max-w-[1440px] mx-auto">
+              <RenderDateRange />
+            </div>
+          </main>
           <TaskPickerModal />
         </SelectedCellsProvider>
         <Toolbar />

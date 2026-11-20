@@ -28,12 +28,12 @@ const AuthCallback = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-page">
+      <div className="min-h-screen flex items-center justify-center bg-canvas">
         <div className="text-center">
-          <p className="text-danger-note mb-4">{error}</p>
+          <p className="text-danger mb-4">{error}</p>
           <button
             onClick={() => navigate('/login', { replace: true })}
-            className="text-accent-text hover:underline"
+            className="text-fg font-medium hover:underline"
           >
             Back to login
           </button>
@@ -43,8 +43,8 @@ const AuthCallback = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-page">
-      <div className="text-fg-muted">Signing in…</div>
+    <div className="min-h-screen flex items-center justify-center bg-canvas">
+      <div className="text-muted">Signing in…</div>
     </div>
   );
 };

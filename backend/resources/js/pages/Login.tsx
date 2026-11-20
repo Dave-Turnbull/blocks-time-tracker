@@ -42,19 +42,19 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-page">
-      <div className="w-full max-w-sm p-8 bg-surface rounded-xl shadow border border-line">
+    <div className="min-h-screen flex items-center justify-center bg-canvas">
+      <div className="w-full max-w-sm p-8 bg-canvas rounded-panel border">
         <h1 className="text-2xl font-bold text-fg mb-6">Sign in</h1>
 
         {error && (
-          <p className="mb-4 text-sm text-danger-note bg-[var(--color-danger-subtle)] rounded px-3 py-2">
+          <p className="mb-4 text-sm text-danger border border-danger rounded-control px-3 py-2">
             {error}
           </p>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-fg-secondary mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-fg mb-1">
               Email
             </label>
             <input
@@ -63,11 +63,11 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 rounded border border-line-strong bg-surface-input text-fg focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3 py-2 rounded-control border bg-canvas text-fg focus:outline-none focus:ring-2 focus:ring-fg"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-fg-secondary mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-fg mb-1">
               Password
             </label>
             <input
@@ -76,13 +76,13 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 rounded border border-line-strong bg-surface-input text-fg focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3 py-2 rounded-control border bg-canvas text-fg focus:outline-none focus:ring-2 focus:ring-fg"
             />
           </div>
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2 px-4 bg-accent hover:bg-accent-hover disabled:opacity-50 text-accent-fg font-medium rounded transition-colors"
+            className="w-full py-2 px-4 bg-fg disabled:opacity-50 text-canvas font-medium rounded-control transition-colors"
           >
             {isLoading ? 'Signing in…' : 'Sign in'}
           </button>
@@ -95,16 +95,16 @@ const Login = () => {
                own domain, not a client-side route change. */}
             <a
               href="/auth/authentik/redirect"
-              className="w-full block text-center py-2 px-4 border border-line-strong rounded text-fg-secondary hover:bg-surface-hover transition-colors"
+              className="w-full block text-center py-2 px-4 border rounded-control text-fg font-medium hover:bg-hover transition-colors"
             >
               Log in with Authentik
             </a>
           </div>
         )}
 
-        <p className="mt-4 text-sm text-center text-fg-muted">
+        <p className="mt-4 text-sm text-center text-muted">
           No account?{' '}
-          <Link to="/register" className="text-accent-text hover:underline">
+          <Link to="/register" className="text-fg font-medium hover:underline">
             Register
           </Link>
         </p>

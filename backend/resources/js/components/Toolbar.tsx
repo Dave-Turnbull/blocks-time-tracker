@@ -1,17 +1,29 @@
 import { useContext, useState } from 'react';
 import { ToolbarContext } from '../contexts/ToolbarContext';
 import { useAuth } from '../contexts/AuthContext';
+import { Popover } from './Popover';
 
 const inputClass =
-  "px-2 py-1 rounded text-sm focus:outline-none border " +
-  "bg-surface-input text-fg border-line-strong focus:border-fg-muted";
+  "h-8 px-2 rounded-control text-sm border bg-canvas text-fg " +
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-fg";
 
-const labelClass =
-  "text-xs font-medium uppercase tracking-wide text-fg-muted";
+const labelClass = "text-xs text-muted";
 
 const btnBase =
-  "px-3 py-1 rounded text-sm font-medium transition-colors border " +
-  "bg-surface-btn hover:bg-surface-btn-hover text-fg-secondary border-line-strong";
+  "h-8 px-3 rounded-control text-sm border bg-canvas hover:bg-hover text-fg transition-colors " +
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-fg";
+
+const btnInverted =
+  "h-8 px-3 rounded-control text-sm border border-fg bg-fg text-canvas transition-colors " +
+  "focus:outline-none focus-visible:ring-2 focus-visible:ring-fg focus-visible:ring-offset-2 " +
+  "focus-visible:ring-offset-canvas";
+
+// 8px padding around 8px-radius items keeps popover corners concentric with the 16px panel.
+const popoverClass = "absolute bottom-full mb-2 bg-canvas rounded-panel border p-2 z-50";
+
+const popoverItemClass = (active: boolean) =>
+  "w-full text-left px-2 py-1 rounded-control text-sm flex items-center gap-2 transition-colors " +
+  (active ? "bg-hover text-fg" : "text-fg hover:bg-hover");
 
 const TaskSelector = () => {
   const { tasks, selectedTaskId, setSelectedTaskId, taskMruOrder } = useContext(ToolbarContext);
@@ -42,90 +54,108 @@ const TaskSelector = () => {
   };
 
   return (
-    <div className="relative">
-      {isOpen && (
-        <div className="fixed inset-0 z-40" onMouseDown={close} />
-      )}
-      <button
-        onClick={isOpen ? close : open}
-        className={`${btnBase} flex items-center gap-2 min-w-[120px]`}
-      >
-        {selectedTask ? (
-          <>
-            <span
-              className="w-3 h-3 rounded-full flex-shrink-0"
-              style={{ backgroundColor: selectedTask.color }}
-            />
-            <span className="max-w-[100px] truncate">{selectedTask.name}</span>
-          </>
-        ) : (
-          <span className="text-fg-subtle">No task</span>
-        )}
-        <span className="ml-auto opacity-50 text-xs">▾</span>
-      </button>
-
-      {isOpen && (
-        <div className="absolute bottom-full mb-2 left-0 w-56 bg-surface rounded-lg shadow-panel border border-line z-50 overflow-hidden">
-          <div className="p-2 border-b border-line">
-            <input
-              type="text"
-              placeholder="Search tasks…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={`${inputClass} w-full`}
-              autoFocus
-            />
-          </div>
-          <ul className="max-h-52 overflow-y-auto py-1">
-            <li>
+    <Popover
+      isOpen={isOpen}
+      onClose={close}
+      trigger={
+        <button
+          onClick={isOpen ? close : open}
+          className={`${btnBase} flex items-center gap-2 min-w-[120px]`}
+        >
+          {selectedTask ? (
+            <>
+              <span
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: selectedTask.color }}
+              />
+              <span className="max-w-[100px] truncate">{selectedTask.name}</span>
+            </>
+          ) : (
+            <span className="text-muted">No task</span>
+          )}
+          <span className="ml-auto text-muted text-xs">▾</span>
+        </button>
+      }
+    >
+      <div className={`${popoverClass} left-0 w-60 flex flex-col gap-1`}>
+        <input
+          type="text"
+          placeholder="Search tasks…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className={`${inputClass} w-full`}
+          autoFocus
+        />
+        <ul className="max-h-52 overflow-y-auto list-none p-0 m-0">
+          <li>
+            <button
+              onMouseDown={(e) => { e.stopPropagation(); selectTask(null); }}
+              className={popoverItemClass(!selectedTaskId)}
+            >
+              <span className="text-muted">No task (show picker)</span>
+            </button>
+          </li>
+          {filtered.map((task) => (
+            <li key={task.id}>
               <button
-                onMouseDown={(e) => { e.stopPropagation(); selectTask(null); }}
-                className={`w-full text-left px-3 py-1.5 text-sm transition-colors ${
-                  !selectedTaskId
-                    ? 'bg-surface-input text-fg'
-                    : 'text-fg-muted hover:bg-surface-hover'
-                }`}
+                onMouseDown={(e) => { e.stopPropagation(); selectTask(String(task.id)); }}
+                className={popoverItemClass(selectedTaskId === String(task.id))}
               >
-                No task (show picker)
+                <span
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: task.color }}
+                />
+                <span className="truncate">{task.name}</span>
               </button>
             </li>
-            {filtered.map((task) => (
-              <li key={task.id}>
-                <button
-                  onMouseDown={(e) => { e.stopPropagation(); selectTask(String(task.id)); }}
-                  className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 transition-colors ${
-                    selectedTaskId === String(task.id)
-                      ? 'bg-surface-input text-fg'
-                      : 'text-fg-secondary hover:bg-surface-hover'
-                  }`}
-                >
-                  <span
-                    className="w-3 h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: task.color }}
-                  />
-                  <span className="truncate">{task.name}</span>
-                </button>
-              </li>
-            ))}
-            {filtered.length === 0 && (
-              <li className="px-3 py-2 text-xs text-fg-subtle">
-                No tasks match
-              </li>
-            )}
-          </ul>
-        </div>
-      )}
-    </div>
+          ))}
+          {filtered.length === 0 && (
+            <li className="px-2 py-1 text-sm text-muted">No tasks match</li>
+          )}
+        </ul>
+      </div>
+    </Popover>
+  );
+};
+
+const AccountMenu = () => {
+  const { user, logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const initial = user?.name?.trim().charAt(0).toUpperCase() || '?';
+
+  return (
+    <Popover
+      isOpen={isOpen}
+      onClose={() => setIsOpen(false)}
+      trigger={
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`${btnBase} w-8 px-0 rounded-full font-medium`}
+          aria-label="Account"
+        >
+          {initial}
+        </button>
+      }
+    >
+      <div className={`${popoverClass} right-0 w-48`}>
+        {user && (
+          <p className="px-2 py-1 m-0 text-sm text-muted truncate">{user.email}</p>
+        )}
+        <button
+          onMouseDown={(e) => { e.stopPropagation(); logout(); }}
+          className={popoverItemClass(false)}
+        >
+          Log out
+        </button>
+      </div>
+    </Popover>
   );
 };
 
 export const Toolbar = () => {
-  const { logout } = useAuth();
-
   const {
     inputValue,
     setInputValue,
-    minuteinput,
     setMinuteInput,
     startDate,
     setStartDate,
@@ -172,83 +202,71 @@ export const Toolbar = () => {
   };
 
   return (
-    <menu
-      className={
-        "relative flex flex-row flex-wrap gap-x-6 gap-y-2 items-center px-6 py-3 z-[100] m-0 " +
-        "bg-surface border-t border-line"
-      }
-    >
-      <div className="flex items-center gap-2">
-        <span className={labelClass}>Task</span>
-        <TaskSelector />
-      </div>
+    <footer className="relative h-16 shrink-0 px-2 bg-canvas z-[100]">
+      <div className="h-full max-w-[1440px] mx-auto flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className={labelClass}>Task</span>
+            <TaskSelector />
+          </div>
 
-      <div className="flex items-center gap-2">
-        <span className={labelClass}>Cell size (min)</span>
-        <form onSubmit={handleIntervalSubmit} className="flex items-center gap-2">
-          <input
-            type="number"
-            value={inputValue}
-            onChange={handleIntervalChange}
-            className={`${inputClass} w-16`}
-          />
-          <button type="submit" className={btnBase}>
-            Set
+          <form onSubmit={handleIntervalSubmit} className="flex items-center gap-2">
+            <label htmlFor="cell-size" className={labelClass}>Cell size (min)</label>
+            <input
+              id="cell-size"
+              type="number"
+              value={inputValue}
+              onChange={handleIntervalChange}
+              className={`${inputClass} w-16`}
+            />
+            <button type="submit" className={btnBase}>
+              Set
+            </button>
+          </form>
+
+          <label className={`${labelClass} flex items-center gap-2`}>
+            Start
+            <input
+              type="date"
+              value={startDate}
+              onChange={handleStartDateChange}
+              className={inputClass}
+            />
+          </label>
+          <label className={`${labelClass} flex items-center gap-2`}>
+            End
+            <input
+              type="date"
+              value={endDate}
+              onChange={handleEndDateChange}
+              className={inputClass}
+            />
+          </label>
+
+          <button
+            onClick={() => setEraseTool(!eraseTool)}
+            className={eraseTool ? btnInverted : btnBase}
+            aria-pressed={eraseTool}
+          >
+            Erase
           </button>
-        </form>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className={btnBase}
+            aria-label="Toggle theme"
+          >
+            {isDark ? "☀ Light" : "☾ Dark"}
+          </button>
+          {/* Placeholder: task creation outside the picker modal is not built yet. */}
+          <button type="button" className={btnInverted}>
+            + New task
+          </button>
+          <AccountMenu />
+        </div>
       </div>
-
-      <div className="flex items-center gap-4">
-        <label className={`${labelClass} flex items-center gap-2`}>
-          Start
-          <input
-            type="date"
-            value={startDate}
-            onChange={handleStartDateChange}
-            className={inputClass}
-          />
-        </label>
-        <label className={`${labelClass} flex items-center gap-2`}>
-          End
-          <input
-            type="date"
-            value={endDate}
-            onChange={handleEndDateChange}
-            className={inputClass}
-          />
-        </label>
-      </div>
-
-      <button
-        onClick={() => setEraseTool(!eraseTool)}
-        className={`px-3 py-1 rounded text-sm font-medium transition-colors border ${
-          eraseTool
-            ? "bg-[var(--color-danger-bg)] hover:bg-[var(--color-danger-bg-hover)] text-danger-fg border-danger-line"
-            : btnBase
-        }`}
-      >
-        {eraseTool ? "Erase: ON" : "Erase: OFF"}
-      </button>
-
-      <button
-        onClick={toggleTheme}
-        className={`${btnBase} ml-auto`}
-        aria-label="Toggle theme"
-      >
-        {isDark ? "☀ Light" : "☾ Dark"}
-      </button>
-
-      <span className={`${labelClass} text-xs`}>
-        {minuteinput} min/cell
-      </span>
-
-      <button
-        onClick={logout}
-        className={`${btnBase} text-xs`}
-        aria-label="Log out"
-      >
-        Log out
-      </button>
-    </menu>
+    </footer>
   );
 };

@@ -42,15 +42,12 @@ function renderRange(cellsData: Record<string, unknown[]>) {
   );
 }
 
-// The TaskList heading shows the date in YYYY-MM-DD format.
-// SingleDay headings show the human-readable date ("Sunday 28th June 2026"),
-// so querying for the ISO format is unique to the TaskList sidebar.
-const taskListHeading = (date: string) => screen.getByText(date);
+const sidebarDay = () => screen.getByRole('region', { name: 'Tasks' }).getAttribute('data-day');
 
 describe('RenderDateRange', () => {
   it('shows the first day of cellsData in the sidebar heading', () => {
     renderRange({ '2026-06-28': [] });
-    expect(taskListHeading('2026-06-28')).toBeInTheDocument();
+    expect(sidebarDay()).toBe('2026-06-28');
   });
 
   it('updates the sidebar heading when cellsData loads after an initially empty render', () => {
@@ -58,8 +55,7 @@ describe('RenderDateRange', () => {
     // the API response arrived, leaving currentFocusedDay as undefined forever.
     const { rerender } = renderRange({});
 
-    // Initially empty: no date set, sidebar shows fallback text
-    expect(screen.queryByText('2026-06-28')).not.toBeInTheDocument();
+    expect(sidebarDay()).toBe('');
 
     // cellsData arrives from the API
     act(() => {
@@ -72,12 +68,12 @@ describe('RenderDateRange', () => {
       );
     });
 
-    expect(taskListHeading('2026-06-28')).toBeInTheDocument();
+    expect(sidebarDay()).toBe('2026-06-28');
   });
 
   it('resets the sidebar to the first available day when the date range changes', () => {
     const { rerender } = renderRange({ '2026-06-28': [], '2026-06-29': [] });
-    expect(taskListHeading('2026-06-28')).toBeInTheDocument();
+    expect(sidebarDay()).toBe('2026-06-28');
 
     act(() => {
       rerender(
@@ -89,7 +85,6 @@ describe('RenderDateRange', () => {
       );
     });
 
-    expect(taskListHeading('2026-07-01')).toBeInTheDocument();
-    expect(screen.queryByText('2026-06-28')).not.toBeInTheDocument();
+    expect(sidebarDay()).toBe('2026-07-01');
   });
 });
