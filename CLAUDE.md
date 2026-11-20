@@ -308,7 +308,7 @@ cd backend && npx vitest
 ```
 - Environment: jsdom with `@testing-library/react`
 - Setup: `backend/resources/js/__tests__/setup.ts` imports `@testing-library/jest-dom`
-- **94 tests, all passing**
+- **103 tests, all passing**
 
 ---
 
@@ -421,15 +421,16 @@ Interaction overlays: drag selection `bg-fg/35`, sidebar-hover link highlight `b
 ### Scales
 
 - **Spacing:** 1, 2, 4, 8, 16, 32px only.
-- **Radii:** `rounded-panel` 16px (panels, modals, popovers), `rounded-group` 11px (cell-group border), `rounded-control` 8px (buttons, inputs, list items), `rounded-cell` 8px (outer corners of first/last cell in a group). Group = cell + 2px padding + 1px border so corners are concentric — keep that relationship if either changes. Popovers use 8px padding around 8px items for the same reason.
+- **Radii:** `rounded-panel` 16px (panels, modals, popovers), `rounded-group` 11px (cell-group border), `rounded-control` 8px (buttons, inputs, list items), `rounded-cell` 8px (outer corners of first/last cell in a group). Group = cell + 3px padding (2px visual gap + the 1px `shadow-group` line drawn inside it) so corners are concentric — keep that relationship if either changes. `rounded-group`/`rounded-cell` are defined as `calc(var(--day-scale, 1) * Npx)` so they scale with the grid. Popovers use 8px padding around 8px items for the same reason.
 - **Type:** titles `text-5xl` (3rem) with `leading-none`; body `text-sm`; labels/time labels `text-xs text-muted`.
-- **Cell border:** `shadow-cell` (inset 1px `muted`). It is a box-shadow, not a border, so task-colour fills (child elements) paint over it and the cell stays 40×40.
+- **Cell border:** `shadow-cell` (inset 1px `muted`). It is a box-shadow, not a border, so task-colour fills (child elements) paint over it and the cell stays 40×40 at scale 1. The group border is `shadow-group` for a different reason too: browsers snap real border-widths to whole pixels, which would break the exact-fill maths below.
 
 ### Layout
 
 - `App.tsx`: `main` (flex-1, `p-2`) and a 64px `footer` toolbar (`Toolbar.tsx`), each with an inner `max-w-[1440px] mx-auto` wrapper.
 - `RenderDateRange.tsx`: blocks panel (flex-1) and 375px task panel, 8px apart, each `border rounded-panel` with internal scrolling.
-- Day: weekday (bold `fg`) + date (`muted`) on the left at 3rem; groups wrap left (4px column gap, 12px row gap); cells 2px apart. Each group's time label hangs from its bottom border (label top 3px above the line) with a `bg-canvas` backing, notching the line like a fieldset legend — the border wraps only the cells.
+- Day: weekday + day number (`fg`, number's ordinal suffix in `<sup>`) and month/year (`muted`) on the left at 3rem; groups wrap left (4px column gap, 12px row gap); cells 2px apart. Each group's time label hangs from its bottom border (label top 3px above the line) with a `bg-canvas` backing, notching the line like a fieldset legend — the border wraps only the cells.
+- **Grid scaling:** every px dimension in the grid (cell 40, cell gap 2, group padding 3, group border 1, column gap 4, row gap 12, group mb 4, both grid radii) is written as `calc(var(--day-scale, 1) * Npx)`. `RenderDateRange` sets `--day-scale` on the days wrapper from a ResizeObserver via `computeDayScale(width, groupWidth, gap, minScale, maxGroups)` (utils): fit as many groups as possible at min scale (currently 1; zoom levels will change it), then scale that row up to fill the container exactly. Shrinking the container shrinks the scale to the min, then the row wraps one fewer group and scales back up. Time labels and day headings do NOT scale. The base-px constants live at the top of `RenderDateRange.tsx` and MUST match the component classes.
 - Toolbar: tools on the left, actions (theme, "+ New task" placeholder, account menu with log out) on the right. Shared dropdown behaviour lives in `Popover.tsx`.
 
 ## Pending Work

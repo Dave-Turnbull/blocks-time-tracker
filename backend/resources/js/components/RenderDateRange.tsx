@@ -3,10 +3,21 @@ import SingleDay from "./SingleDay";
 import { SelectedCellsContext } from "../contexts/SelectCellsContext";
 import TaskList from "./TaskList";
 import { ToolbarContext } from "../contexts/ToolbarContext";
-import { readableTime } from "../utils/utils";
+import { readableTime, computeDayScale } from "../utils/utils";
+import { cellGroupTotalTime } from "../data/cellGroupTotalTime";
 
 // Distance from the top/bottom of the scroll content at which more days load.
 const EDGE_TRIGGER_PX = 400;
+
+// Base (scale 1) grid dimensions. Every px size in the grid is written as
+// calc(var(--day-scale) * Npx), so these must match the component classes.
+const CELL_PX = 40;
+const CELL_GAP_PX = 2;
+const GROUP_PAD_PX = 2;
+const GROUP_BORDER_PX = 1;
+const COLUMN_GAP_PX = 4;
+// Scale 1 is the smallest the grid renders; zoom levels will adjust this.
+const MIN_DAY_SCALE = 1;
 
 export const RenderDateRange = () => {
   const { cellsData, selectedCells, extendWindow } = useContext(SelectedCellsContext);
@@ -14,7 +25,9 @@ export const RenderDateRange = () => {
   const [currentFocusedDay, setCurrentFocusedDay] = useState("");
   const [hoveredTime, setHoveredTime] = useState<{ start: number; end: number } | null>(null);
   const cellsWrapperRef = useRef<HTMLDivElement>(null);
+  const daysWrapperRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [dayScale, setDayScale] = useState(MIN_DAY_SCALE);
 
   const dates = Object.keys(cellsData);
   const datesKey = dates.join(",");
@@ -40,6 +53,27 @@ export const RenderDateRange = () => {
   function handleCellMouseLeave() {
     setHoveredTime(null);
   }
+
+  // Scale the cell groups so a whole number of them fills the row exactly,
+  // recomputed when the container resizes or the cell size changes.
+  useEffect(() => {
+    const el = daysWrapperRef.current;
+    if (!el) return;
+    const groupMinutes = (cellGroupTotalTime as Record<number, number>)[minuteinput];
+    const cellsInGroup = groupMinutes / minuteinput;
+    const groupWidth =
+      cellsInGroup * CELL_PX +
+      (cellsInGroup - 1) * CELL_GAP_PX +
+      2 * (GROUP_PAD_PX + GROUP_BORDER_PX);
+    const maxGroups = Math.ceil(1440 / groupMinutes);
+    const update = () => {
+      setDayScale(computeDayScale(el.clientWidth, groupWidth, COLUMN_GAP_PX, MIN_DAY_SCALE, maxGroups));
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [minuteinput]);
 
   // Keep the focused day in sync with cellsData: set it on first load and
   // reset it whenever the window changes and the current day falls out of it.
@@ -144,7 +178,11 @@ export const RenderDateRange = () => {
               </div>
             )}
           </div>
-          <div className="flex flex-col gap-8">
+          <div
+            className="flex flex-col gap-8"
+            ref={daysWrapperRef}
+            style={{ '--day-scale': dayScale } as React.CSSProperties}
+          >
             {dates.map((key) => (
               <div
                 key={key}

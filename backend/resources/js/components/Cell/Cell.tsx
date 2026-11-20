@@ -27,7 +27,7 @@ export const Cell = memo(({ cellIndex, cell, dayToRender, selected, groupPositio
       data-day={dayToRender}
       data-time={cell.startTime}
       data-cell-index={cellIndex}
-      className={`w-10 h-10 bg-cell shadow-cell relative ${radius}`}
+      className={`w-[calc(var(--day-scale,1)*40px)] h-[calc(var(--day-scale,1)*40px)] bg-cell shadow-cell relative ${radius}`}
     >
       {selected && !eraseTool && (
         <SelectedCellOverlay groupPosition={groupPosition} />

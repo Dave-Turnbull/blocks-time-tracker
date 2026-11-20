@@ -21,12 +21,14 @@ export default {
         DEFAULT: 'rgb(var(--color-muted) / <alpha-value>)',
       },
 
-      // group = cell + 2px group padding + 1px group border, so corners stay concentric
+      // group = cell + 2px group padding + 1px group border, so corners stay
+      // concentric. group/cell scale with the grid via --day-scale (set on the
+      // days wrapper in RenderDateRange; defaults to 1 everywhere else).
       borderRadius: {
         panel:   '16px',
-        group:   '11px',
+        group:   'calc(var(--day-scale, 1) * 11px)',
         control: '8px',
-        cell:    '8px',
+        cell:    'calc(var(--day-scale, 1) * 8px)',
       },
 
       fontFamily: {
@@ -35,7 +37,10 @@ export default {
 
       boxShadow: {
         // Inset so it sits under the task-colour fills, which are child elements.
-        cell: 'inset 0 0 0 1px rgb(var(--color-muted))',
+        cell: 'inset 0 0 0 calc(var(--day-scale, 1) * 1px) rgb(var(--color-muted))',
+        // The group "border" is a shadow because browsers snap border-width to
+        // whole pixels, which breaks the exact-fill row maths at odd scales.
+        group: 'inset 0 0 0 calc(var(--day-scale, 1) * 1px) rgb(var(--color-outline))',
       },
     },
   },
