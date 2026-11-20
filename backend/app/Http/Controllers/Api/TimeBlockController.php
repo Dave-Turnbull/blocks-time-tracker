@@ -57,6 +57,24 @@ class TimeBlockController extends Controller
         $user = $request->user();
         $this->resolveOverlaps($user, $data['date'], $data['start_time'], $data['end_time']);
 
+        // Same-task blocks sitting flush against the new range are absorbed
+        // into it rather than kept as separate back-to-back blocks. This also
+        // coalesces same-task overlaps: resolveOverlaps trims them flush first.
+        $adjacent = $user->timeBlocks()
+            ->where('date', $data['date'])
+            ->where('task_id', $data['task_id'])
+            ->where(function ($query) use ($data) {
+                $query->where('end_time', $data['start_time'])
+                    ->orWhere('start_time', $data['end_time']);
+            })
+            ->get();
+
+        if ($adjacent->isNotEmpty()) {
+            $data['start_time'] = min($data['start_time'], $adjacent->min('start_time'));
+            $data['end_time'] = max($data['end_time'], $adjacent->max('end_time'));
+            $adjacent->each->delete();
+        }
+
         $block = $user->timeBlocks()->create($data);
         $block->load('task:id,name,description,color');
 

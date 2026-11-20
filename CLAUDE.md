@@ -104,7 +104,7 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │   ├── AuthTest.php       ← 14 tests: register, login, logout, /auth/user
 │   │   ├── AuthentikTest.php  ← 9 tests: enabled flag, redirect/callback gating, link/match/provision flows, throttling
 │   │   ├── TaskTest.php       ← 16 tests: CRUD + 401/403 isolation
-│   │   └── TimeBlockTest.php  ← 22 tests: CRUD + date range + grouped response shape
+│   │   └── TimeBlockTest.php  ← 29 tests: CRUD + date range + grouped response + overlap/adjacent-merge behaviour
 │   ├── vite.config.ts    ← laravel-vite-plugin + @vitejs/plugin-react; HMR host=localhost (prevents Docker CORS)
 │   ├── vitest.config.ts  ← environment: jsdom, globals: true, setupFiles: __tests__/setup.ts
 │   └── phpunit.xml       ← DB_CONNECTION=sqlite, DB_DATABASE=:memory: for all tests
@@ -234,7 +234,7 @@ real Authentik application's OAuth2 provider config, whose redirect URI must be
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/time-blocks?start=YYYY-MM-DD&end=YYYY-MM-DD` | Returns object keyed by date, each value is an array of time block records |
-| POST | `/api/time-blocks` | `{task_id, date, start_time, end_time}` — times in minutes from midnight (0–1440) |
+| POST | `/api/time-blocks` | `{task_id, date, start_time, end_time}` — times in minutes from midnight (0–1440). Same-task blocks flush against the new range (same user/date) are absorbed into one block; combined with overlap trimming this also coalesces same-task overlaps. The response is the merged block. |
 | PUT/PATCH | `/api/time-blocks/{id}` | Partial update; 403 if not owner |
 | DELETE | `/api/time-blocks/{id}` | 204; 403 if not owner |
 
@@ -298,7 +298,7 @@ docker compose exec app php artisan test
 - Uses SQLite in-memory (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:` in phpunit.xml)
 - All test classes use `RefreshDatabase`
 - Authenticate with `Sanctum::actingAs($user)`
-- **77 tests, all passing**
+- **84 tests, all passing**
 
 ### Frontend (Vitest) — run from `backend/`:
 ```bash
