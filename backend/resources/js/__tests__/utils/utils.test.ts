@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readableTime, readableDate, addDays, daysBetween, listDates, extendDateWindow } from '../../utils/utils';
+import { readableTime, readableDate, readableDateParts, addDays, daysBetween, listDates, extendDateWindow } from '../../utils/utils';
 
 // ---------------------------------------------------------------------------
 // readableTime
@@ -193,5 +193,22 @@ describe('extendDateWindow', () => {
             start: '2026-06-11',
             end: '2026-07-10',
         });
+    });
+});
+
+// ---------------------------------------------------------------------------
+// readableDateParts
+// ---------------------------------------------------------------------------
+
+describe('readableDateParts', () => {
+    it('splits a date into its display parts', () => {
+        expect(readableDateParts('2026-06-21')).toEqual({
+            weekday: 'Sunday', day: 21, suffix: 'st', month: 'June', year: 2026,
+        });
+    });
+
+    it('matches what readableDate renders', () => {
+        const { weekday, day, suffix, month, year } = readableDateParts('2026-11-03');
+        expect(`${weekday} ${day}${suffix} ${month} ${year}`).toBe(readableDate('2026-11-03'));
     });
 });

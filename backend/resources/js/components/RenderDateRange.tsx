@@ -132,7 +132,7 @@ export const RenderDateRange = () => {
     <div className="relative flex h-full gap-2">
       <div className="flex-1 min-w-0 border rounded-panel overflow-hidden">
         <div
-          className="cell-render-container h-full overflow-auto p-4 [overflow-anchor:none]"
+          className="cell-render-container h-full overflow-auto p-4 [overflow-anchor:none] snap-y snap-mandatory scroll-pt-4"
           ref={cellsWrapperRef}
           onMouseOver={handleCellMouseOver}
           onMouseLeave={handleCellMouseLeave}
@@ -149,6 +149,7 @@ export const RenderDateRange = () => {
               <div
                 key={key}
                 data-date={key}
+                className="snap-start"
                 ref={(ref) => { dayRefs.current[key] = ref; }}
               >
                 <SingleDay
