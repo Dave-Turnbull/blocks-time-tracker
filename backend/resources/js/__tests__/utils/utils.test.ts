@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readableTime, readableDate } from '../../utils/utils';
+import { readableTime, readableDate, addDays, daysBetween, listDates, extendDateWindow } from '../../utils/utils';
 
 // ---------------------------------------------------------------------------
 // readableTime
@@ -100,5 +100,98 @@ describe('readableDate', () => {
     // Full format check
     it('produces the full formatted string correctly', () => {
         expect(readableDate('2024-08-01')).toBe('Thursday 1st August 2024');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// addDays / daysBetween / listDates
+// ---------------------------------------------------------------------------
+
+describe('addDays', () => {
+    it('adds days within a month', () => {
+        expect(addDays('2026-06-10', 5)).toBe('2026-06-15');
+    });
+
+    it('subtracts days', () => {
+        expect(addDays('2026-06-10', -10)).toBe('2026-05-31');
+    });
+
+    it('crosses month and year boundaries', () => {
+        expect(addDays('2026-12-28', 10)).toBe('2027-01-07');
+        expect(addDays('2026-01-03', -5)).toBe('2025-12-29');
+    });
+
+    it('handles leap years', () => {
+        expect(addDays('2024-02-28', 1)).toBe('2024-02-29');
+        expect(addDays('2026-02-28', 1)).toBe('2026-03-01');
+    });
+
+    it('returns the same date for zero', () => {
+        expect(addDays('2026-06-10', 0)).toBe('2026-06-10');
+    });
+});
+
+describe('daysBetween', () => {
+    it('returns zero for the same date', () => {
+        expect(daysBetween('2026-06-10', '2026-06-10')).toBe(0);
+    });
+
+    it('counts forwards and backwards', () => {
+        expect(daysBetween('2026-06-10', '2026-06-15')).toBe(5);
+        expect(daysBetween('2026-06-15', '2026-06-10')).toBe(-5);
+    });
+
+    it('counts across month boundaries', () => {
+        expect(daysBetween('2026-05-31', '2026-06-02')).toBe(2);
+    });
+});
+
+describe('listDates', () => {
+    it('lists an inclusive range in order', () => {
+        expect(listDates('2026-06-28', '2026-07-01')).toEqual([
+            '2026-06-28', '2026-06-29', '2026-06-30', '2026-07-01',
+        ]);
+    });
+
+    it('returns a single date when start equals end', () => {
+        expect(listDates('2026-06-28', '2026-06-28')).toEqual(['2026-06-28']);
+    });
+
+    it('returns empty when start is after end', () => {
+        expect(listDates('2026-06-29', '2026-06-28')).toEqual([]);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// extendDateWindow
+// ---------------------------------------------------------------------------
+
+describe('extendDateWindow', () => {
+    const win = { start: '2026-06-01', end: '2026-06-20' }; // 20 days
+
+    it('grows into the past while under the max', () => {
+        expect(extendDateWindow(win, 'past', 10, 30)).toEqual({
+            start: '2026-05-22',
+            end: '2026-06-20',
+        });
+    });
+
+    it('grows into the future while under the max', () => {
+        expect(extendDateWindow(win, 'future', 10, 30)).toEqual({
+            start: '2026-06-01',
+            end: '2026-06-30',
+        });
+    });
+
+    it('slides instead of growing once at the max', () => {
+        const full = { start: '2026-06-01', end: '2026-06-30' }; // 30 days
+        expect(extendDateWindow(full, 'past', 10, 30)).toEqual({
+            start: '2026-05-22',
+            end: '2026-06-20',
+        });
+        expect(extendDateWindow(full, 'future', 10, 30)).toEqual({
+            start: '2026-06-11',
+            end: '2026-07-10',
+        });
     });
 });

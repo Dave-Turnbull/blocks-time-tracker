@@ -10,15 +10,19 @@ export interface Task {
 
 export type TaskRecord = Record<string, Task>;
 
+// nonce lets "Go to" re-trigger a scroll even when the date is unchanged.
+export interface GoToTarget {
+  date: string;
+  nonce: number;
+}
+
 interface ToolbarContextType {
   inputValue: number;
   setInputValue: React.Dispatch<React.SetStateAction<number>>;
   minuteinput: number;
   setMinuteInput: React.Dispatch<React.SetStateAction<number>>;
-  startDate: string;
-  setStartDate: React.Dispatch<React.SetStateAction<string>>;
-  endDate: string;
-  setEndDate: React.Dispatch<React.SetStateAction<string>>;
+  goToTarget: GoToTarget;
+  goToDate: (date: string) => void;
   eraseTool: boolean;
   setEraseTool: React.Dispatch<React.SetStateAction<boolean>>;
   tasks: TaskRecord;
@@ -36,8 +40,10 @@ export const ToolbarContext = createContext<ToolbarContextType>({} as ToolbarCon
 export const ToolbarProvider = ({ children }: { children: React.ReactNode }) => {
   const [inputValue, setInputValue] = useState(15);
   const [minuteinput, setMinuteInput] = useState(15);
-  const [startDate, setStartDate] = useState(new Date().toISOString().substring(0, 10));
-  const [endDate, setEndDate] = useState(new Date().toISOString().substring(0, 10));
+  const [goToTarget, setGoToTarget] = useState<GoToTarget>({
+    date: new Date().toISOString().substring(0, 10),
+    nonce: 0,
+  });
   const [eraseTool, setEraseTool] = useState(false);
   const [tasks, setTasks] = useState<TaskRecord>({});
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -72,6 +78,10 @@ export const ToolbarProvider = ({ children }: { children: React.ReactNode }) => 
 
   const toggleTheme = () => setIsDark((prev) => !prev);
 
+  const goToDate = (date: string) => {
+    setGoToTarget((prev) => ({ date, nonce: prev.nonce + 1 }));
+  };
+
   const updateTaskMru = (taskId: string) => {
     setTaskMruOrder((prev) => {
       const next = [taskId, ...prev.filter((id) => id !== taskId)];
@@ -85,8 +95,7 @@ export const ToolbarProvider = ({ children }: { children: React.ReactNode }) => 
       value={{
         inputValue, setInputValue,
         minuteinput, setMinuteInput,
-        startDate, setStartDate,
-        endDate, setEndDate,
+        goToTarget, goToDate,
         eraseTool, setEraseTool,
         tasks, setTasks,
         isDark, toggleTheme,
