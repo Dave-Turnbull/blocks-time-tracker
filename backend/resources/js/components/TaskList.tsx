@@ -29,7 +29,7 @@ const TaskList = ({ singleDayDataOnScroll }: TaskListProps) => {
       <h2 className="text-5xl leading-none font-bold text-fg m-0 mb-1 px-2">Tasks</h2>
 
       {sorted.length === 0 ? (
-        <p className="text-sm text-muted m-0 px-2">No time blocks for this day.</p>
+        <p className="text-base text-fg/80 m-0 px-2">No time blocks for this day.</p>
       ) : (
         <ul className="list-none p-0 m-0">
           {sorted.map((block) => {
@@ -49,7 +49,7 @@ const TaskList = ({ singleDayDataOnScroll }: TaskListProps) => {
                 onMouseLeave={() => setSidebarHoveredBlockId(null)}
                 // 3px/7px + the always-present 1px border = 4px/8px of visual padding
                 className={
-                  'text-sm rounded-control px-[7px] py-[3px] border ' +
+                  'text-base rounded-control px-[7px] py-[3px] border ' +
                   (isHovered
                     ? 'bg-hover border-muted'
                     : 'border-transparent hover:bg-hover hover:border-muted')
@@ -62,11 +62,11 @@ const TaskList = ({ singleDayDataOnScroll }: TaskListProps) => {
                   />
                   <div className="min-w-0">
                     <p className="font-medium m-0 text-fg truncate">{task.name}</p>
-                    <p className="m-0 text-muted">
+                    <p className="m-0 text-fg/80">
                       {readableTime(block.startTime)} – {readableTime(block.endTime)}
                     </p>
                     {task.description && (
-                      <p className="m-0 text-muted truncate">{task.description}</p>
+                      <p className="m-0 text-fg/80 truncate">{task.description}</p>
                     )}
                   </div>
                 </div>

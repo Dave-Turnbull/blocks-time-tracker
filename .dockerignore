@@ -3,9 +3,6 @@
 README.md
 CLAUDE.md
 docker-compose.yml
-docker/nginx/default.conf
-docker/php/Dockerfile
-docker/php/entrypoint.sh
 
 backend/node_modules
 backend/vendor

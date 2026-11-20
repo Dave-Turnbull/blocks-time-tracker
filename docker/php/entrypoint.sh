@@ -35,13 +35,13 @@ patch_env DB_USERNAME    "${DB_USERNAME:-timetracker}"
 patch_env DB_PASSWORD    "${DB_PASSWORD:-secret}"
 patch_env APP_URL        http://localhost:8000
 
+# Install/update composer dependencies
+gosu appuser composer install --no-interaction --prefer-dist --optimize-autoloader
+
 # Generate app key on first run
 if ! grep -q "^APP_KEY=base64:" .env 2>/dev/null; then
     gosu appuser php artisan key:generate
 fi
-
-# Install/update composer dependencies
-gosu appuser composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Wait for DB then run migrations
 echo "==> Waiting for database..."

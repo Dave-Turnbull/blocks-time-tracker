@@ -406,6 +406,7 @@ Dark mode swaps `canvas`/`fg` and inverts the greys. Task colours never change.
 | `--color-canvas` | `bg-canvas`, `text-canvas` | `#FFFFFF` | `#1A1A1A` | Page, panels, toolbar, inputs, modals; text on `bg-fg` |
 | `--color-fg` | `text-fg`, `bg-fg` | `#1A1A1A` | `#FFFFFF` | Titles, primary text, primary/inverted buttons, focus rings |
 | `--color-muted` | `text-muted`, `border` (default) | `#A6A6A6` | `#595959` | All borders, secondary text (dates, times, labels) |
+| `--color-outline` | `border-outline`, `text-outline` | `#A6A6A6` | `#FFFFFF` | Cell-group borders, group time labels, toolbar labels — full-contrast in dark |
 | `--color-cell` | `bg-cell` | `#D9D9D9` | `#262626` | Empty time cell |
 | `--color-hover` | `bg-hover` | `#F2F2F2` | `#262626` | Hover fill (list items, buttons) |
 | `--color-danger` | `text-danger`, `border-danger` | red | light red | Error messages only |

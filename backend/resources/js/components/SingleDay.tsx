@@ -30,7 +30,7 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
 
   return (
     <div key={dayToRender} className="innercontainer" draggable={false}>
-      <h2 className="flex items-baseline gap-2 text-5xl leading-none m-0 mb-2 select-none" draggable={false}>
+      <h2 className="flex items-baseline gap-2 text-5xl leading-none m-0 mb-3 select-none" draggable={false}>
         <span className="font-bold text-fg">{weekday}</span>
         <span className="font-normal text-muted">{dateParts.join(" ")}</span>
       </h2>
@@ -43,10 +43,10 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
           const totalMinutes = groupIndex * cellGroupTotalTime[minuteinput];
 
           return (
-            <div key={groupIndex} className="cell-group-container relative border rounded-group p-[2px]">
+            <div key={groupIndex} className="cell-group-container relative border border-outline rounded-group p-[2px] mb-1">
               {/* Overlaps the bottom border by 3px with the canvas behind it, cutting a notch in the line.
                   left-[10px] starts the notch where the 11px corner curve ends. */}
-              <span className="timeLabel absolute top-[calc(100%-3px)] left-[10px] px-1 bg-canvas text-xs leading-none text-muted select-none pointer-events-none">
+              <span className="timeLabel absolute top-[calc(100%-3px)] left-[10px] px-1 bg-canvas text-sm leading-none text-outline select-none pointer-events-none">
                 {readableTime(totalMinutes)}
               </span>
               <div className="cell-group flex flex-nowrap gap-[2px] relative">
