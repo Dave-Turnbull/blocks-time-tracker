@@ -16,18 +16,20 @@ const CELL_GAP_PX = 2;
 const GROUP_PAD_PX = 2;
 const GROUP_BORDER_PX = 1;
 const COLUMN_GAP_PX = 4;
-// Scale 1 is the smallest the grid renders; zoom levels will adjust this.
-const MIN_DAY_SCALE = 1;
+
+const SIDEBAR_DEFAULT_PX = 375;
+const SIDEBAR_MIN_PX = 240;
+const SIDEBAR_MAX_PX = 700;
 
 export const RenderDateRange = () => {
   const { cellsData, selectedCells, extendWindow } = useContext(SelectedCellsContext);
-  const { minuteinput, goToTarget } = useContext(ToolbarContext);
+  const { minuteinput, goToTarget, zoom } = useContext(ToolbarContext);
   const [currentFocusedDay, setCurrentFocusedDay] = useState("");
   const [hoveredTime, setHoveredTime] = useState<{ start: number; end: number } | null>(null);
   const cellsWrapperRef = useRef<HTMLDivElement>(null);
   const daysWrapperRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [dayScale, setDayScale] = useState(MIN_DAY_SCALE);
+  const [dayScale, setDayScale] = useState(1);
 
   const dates = Object.keys(cellsData);
   const datesKey = dates.join(",");
@@ -67,13 +69,13 @@ export const RenderDateRange = () => {
       2 * (GROUP_PAD_PX + GROUP_BORDER_PX);
     const maxGroups = Math.ceil(1440 / groupMinutes);
     const update = () => {
-      setDayScale(computeDayScale(el.clientWidth, groupWidth, COLUMN_GAP_PX, MIN_DAY_SCALE, maxGroups));
+      setDayScale(computeDayScale(el.clientWidth, groupWidth, COLUMN_GAP_PX, zoom, maxGroups));
     };
     update();
     const observer = new ResizeObserver(update);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [minuteinput]);
+  }, [minuteinput, zoom]);
 
   // Keep the focused day in sync with cellsData: set it on first load and
   // reset it whenever the window changes and the current day falls out of it.
@@ -149,6 +151,45 @@ export const RenderDateRange = () => {
     wrapper.scrollTop += el.getBoundingClientRect().top - anchor.top;
   }, [datesKey]);
 
+  // Sidebar is resizable by dragging the divider; width persists locally.
+  const layoutRef = useRef<HTMLDivElement>(null);
+  const draggingSidebar = useRef(false);
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    const saved = Number(localStorage.getItem('sidebar_width'));
+    return saved >= SIDEBAR_MIN_PX && saved <= SIDEBAR_MAX_PX ? saved : SIDEBAR_DEFAULT_PX;
+  });
+
+  function startSidebarDrag(e: React.MouseEvent) {
+    e.preventDefault();
+    draggingSidebar.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }
+
+  useEffect(() => {
+    const handleMove = (e: MouseEvent) => {
+      if (!draggingSidebar.current || !layoutRef.current) return;
+      const right = layoutRef.current.getBoundingClientRect().right;
+      setSidebarWidth(Math.min(SIDEBAR_MAX_PX, Math.max(SIDEBAR_MIN_PX, right - e.clientX - 4)));
+    };
+    const handleUp = () => {
+      if (!draggingSidebar.current) return;
+      draggingSidebar.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      setSidebarWidth((width) => {
+        localStorage.setItem("sidebar_width", String(Math.round(width)));
+        return width;
+      });
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, []);
+
   // Scroll the go-to day (initially today) to the top of the viewport. Runs
   // once per nonce, waiting until the target day is actually rendered.
   const handledGoToNonce = useRef(-1);
@@ -163,7 +204,7 @@ export const RenderDateRange = () => {
   }, [goToTarget, datesKey]);
 
   return (
-    <div className="relative flex h-full gap-2">
+    <div className="relative flex h-full" ref={layoutRef}>
       <div className="flex-1 min-w-0 border rounded-panel overflow-hidden">
         <div
           className="cell-render-container h-full overflow-auto p-4 [overflow-anchor:none] snap-y snap-mandatory scroll-pt-4"
@@ -201,7 +242,17 @@ export const RenderDateRange = () => {
           </div>
         </div>
       </div>
-      <div className="w-[375px] shrink-0 border rounded-panel overflow-hidden">
+      {/* Divider doubles as the sidebar resize handle; w-2 keeps the old 8px panel gap. */}
+      <div
+        onMouseDown={startSidebarDrag}
+        className="w-2 shrink-0 cursor-col-resize group/divider flex items-center justify-center"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize tasks panel"
+      >
+        <div className="w-[2px] h-16 rounded-full bg-muted opacity-0 group-hover/divider:opacity-100 transition-opacity" />
+      </div>
+      <div style={{ width: sidebarWidth }} className="shrink-0 border rounded-panel overflow-hidden">
         <div className="h-full overflow-auto">
           <TaskList singleDayDataOnScroll={currentFocusedDay} />
         </div>

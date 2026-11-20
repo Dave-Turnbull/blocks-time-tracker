@@ -6,6 +6,8 @@ import { AuthContext } from '../../contexts/AuthContext';
 
 function renderToolbar(ctxOverrides: Record<string, unknown> = {}) {
   const goToDate = vi.fn();
+  const zoomIn = vi.fn();
+  const zoomOut = vi.fn();
   render(
     <AuthContext.Provider
       value={{
@@ -24,6 +26,9 @@ function renderToolbar(ctxOverrides: Record<string, unknown> = {}) {
           setMinuteInput: vi.fn(),
           goToTarget: { date: '2026-06-28', nonce: 0 },
           goToDate,
+          zoom: 1,
+          zoomIn,
+          zoomOut,
           eraseTool: false,
           setEraseTool: vi.fn(),
           isDark: false,
@@ -39,7 +44,7 @@ function renderToolbar(ctxOverrides: Record<string, unknown> = {}) {
       </ToolbarContext.Provider>
     </AuthContext.Provider>
   );
-  return { goToDate };
+  return { goToDate, zoomIn, zoomOut };
 }
 
 describe('Toolbar go-to date', () => {
@@ -60,5 +65,27 @@ describe('Toolbar go-to date', () => {
     fireEvent.change(screen.getByLabelText('Go to'), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Go' }));
     expect(goToDate).not.toHaveBeenCalled();
+  });
+});
+
+describe('Toolbar zoom', () => {
+  it('fires zoomIn and zoomOut from the zoom buttons', () => {
+    const { zoomIn, zoomOut } = renderToolbar();
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
+    expect(zoomIn).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom out' }));
+    expect(zoomOut).toHaveBeenCalled();
+  });
+
+  it('disables zoom out at the minimum zoom', () => {
+    renderToolbar({ zoom: 0.5 });
+    expect(screen.getByRole('button', { name: 'Zoom out' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Zoom in' })).toBeEnabled();
+  });
+
+  it('disables zoom in at the maximum zoom', () => {
+    renderToolbar({ zoom: 3 });
+    expect(screen.getByRole('button', { name: 'Zoom in' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Zoom out' })).toBeEnabled();
   });
 });

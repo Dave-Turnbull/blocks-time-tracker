@@ -68,14 +68,14 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │       ├── lib/api.ts            ← Axios instance (baseURL /api); attaches Bearer token; redirects /login on 401
 │   │       ├── contexts/
 │   │       │   ├── AuthContext.tsx         ← User state; login/register/logout; fetches /api/auth/user on mount
-│   │       │   ├── ToolbarContext.tsx      ← Global toolbar state (incl. goToTarget for "Go to" date) + fetches /api/tasks on mount
+│   │       │   ├── ToolbarContext.tsx      ← Global toolbar state (goToTarget for "Go to", zoom = grid min scale) + fetches /api/tasks on mount
 │   │       │   └── SelectCellsContext.tsx  ← Mouse drag state; owns the sliding 30-day window and fetches /api/time-blocks in 10-day chunks; exposes refreshTimeBlocks, extendWindow, pendingSelection, submitTimeBlock, clearPendingSelection
 │   │       ├── pages/
 │   │       │   ├── Login.tsx        ← Guest-only; calls AuthContext.login; renders Authentik link when enabled
 │   │       │   ├── Register.tsx     ← Guest-only; calls AuthContext.register
 │   │       │   └── AuthCallback.tsx ← Route /auth/callback; stores the token from an Authentik login, then navigates home
 │   │       ├── components/
-│   │       │   ├── Toolbar.tsx             ← Left: task, cell size, go-to date, erase. Right: theme, new-task placeholder, account menu (logout)
+│   │       │   ├── Toolbar.tsx             ← Left: task, cell size, go-to date, erase, zoom in/out. Right: theme, new-task placeholder, account menu (logout)
 │   │       │   ├── RenderDateRange.tsx     ← Infinite day scroller: renders the window's SingleDays, extends it at the scroll edges with scroll anchoring, handles go-to scrolls
 │   │       │   ├── SingleDay.tsx           ← Renders one column of Cell components for a date
 │   │       │   ├── TaskList.tsx            ← "Tasks" panel: time blocks for the focused day (exposed as data-day on the section)
@@ -99,7 +99,7 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │           ├── components/TaskPickerModal.test.tsx    ← 10 component tests
 │   │           ├── components/TaskList.test.tsx           ← 12 component tests
 │   │           ├── components/RenderDateRange.test.tsx    ← 5 tests: sidebar focused-day sync + go-to focus
-│   │           └── components/Toolbar.test.tsx            ← 3 tests: go-to date control
+│   │           └── components/Toolbar.test.tsx            ← 6 tests: go-to date + zoom controls
 │   ├── tests/Feature/Api/
 │   │   ├── AuthTest.php       ← 14 tests: register, login, logout, /auth/user
 │   │   ├── AuthentikTest.php  ← 9 tests: enabled flag, redirect/callback gating, link/match/provision flows, throttling
@@ -308,7 +308,7 @@ cd backend && npx vitest
 ```
 - Environment: jsdom with `@testing-library/react`
 - Setup: `backend/resources/js/__tests__/setup.ts` imports `@testing-library/jest-dom`
-- **103 tests, all passing**
+- **106 tests, all passing**
 
 ---
 
@@ -428,9 +428,9 @@ Interaction overlays: drag selection `bg-fg/35`, sidebar-hover link highlight `b
 ### Layout
 
 - `App.tsx`: `main` (flex-1, `p-2`) and a 64px `footer` toolbar (`Toolbar.tsx`), each with an inner `max-w-[1440px] mx-auto` wrapper.
-- `RenderDateRange.tsx`: blocks panel (flex-1) and 375px task panel, 8px apart, each `border rounded-panel` with internal scrolling.
+- `RenderDateRange.tsx`: blocks panel (flex-1) and task panel (default 375px; drag the 8px divider between them to resize 240–700px, persisted as localStorage `sidebar_width`), each `border rounded-panel` with internal scrolling.
 - Day: weekday + day number (`fg`, number's ordinal suffix in `<sup>`) and month/year (`muted`) on the left at 3rem; groups wrap left (4px column gap, 12px row gap); cells 2px apart. Each group's time label hangs from its bottom border (label top 3px above the line) with a `bg-canvas` backing, notching the line like a fieldset legend — the border wraps only the cells.
-- **Grid scaling:** every px dimension in the grid (cell 40, cell gap 2, group padding 3, group border 1, column gap 4, row gap 12, group mb 4, both grid radii) is written as `calc(var(--day-scale, 1) * Npx)`. `RenderDateRange` sets `--day-scale` on the days wrapper from a ResizeObserver via `computeDayScale(width, groupWidth, gap, minScale, maxGroups)` (utils): fit as many groups as possible at min scale (currently 1; zoom levels will change it), then scale that row up to fill the container exactly. Shrinking the container shrinks the scale to the min, then the row wraps one fewer group and scales back up. Time labels and day headings do NOT scale. The base-px constants live at the top of `RenderDateRange.tsx` and MUST match the component classes.
+- **Grid scaling:** every px dimension in the grid (cell 40, cell gap 2, group padding 3, group border 1, column gap 4, row gap 12, group mb 4, both grid radii) is written as `calc(var(--day-scale, 1) * Npx)`. `RenderDateRange` sets `--day-scale` on the days wrapper from a ResizeObserver via `computeDayScale(width, groupWidth, gap, minScale, maxGroups)` (utils): fit as many groups as possible at min scale, then scale that row up to fill the container exactly. The min scale is the toolbar zoom (ToolbarContext `zoom`, default 1, steps of 0.25 within 0.5–3). Shrinking the container shrinks the scale to the min, then the row wraps one fewer group and scales back up. Time labels and day headings do NOT scale. The base-px constants live at the top of `RenderDateRange.tsx` and MUST match the component classes.
 - Toolbar: tools on the left, actions (theme, "+ New task" placeholder, account menu with log out) on the right. Shared dropdown behaviour lives in `Popover.tsx`.
 
 ## Pending Work

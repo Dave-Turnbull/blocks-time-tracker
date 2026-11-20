@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { ToolbarContext } from '../contexts/ToolbarContext';
+import { ToolbarContext, ZOOM_MIN, ZOOM_MAX } from '../contexts/ToolbarContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Popover } from './Popover';
 
@@ -24,6 +24,18 @@ const popoverClass = "absolute bottom-full mb-2 bg-canvas rounded-panel border p
 const popoverItemClass = (active: boolean) =>
   "w-full text-left px-2 py-1 rounded-control text-sm flex items-center gap-2 transition-colors " +
   (active ? "bg-hover text-fg" : "text-fg hover:bg-hover");
+
+const ZoomIcon = ({ out }: { out?: boolean }) => (
+  <svg
+    width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"
+    fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
+  >
+    <circle cx="6.5" cy="6.5" r="4.75" />
+    <line x1="10.25" y1="10.25" x2="14" y2="14" />
+    <line x1="4.5" y1="6.5" x2="8.5" y2="6.5" />
+    {!out && <line x1="6.5" y1="4.5" x2="6.5" y2="8.5" />}
+  </svg>
+);
 
 const TaskSelector = () => {
   const { tasks, selectedTaskId, setSelectedTaskId, taskMruOrder } = useContext(ToolbarContext);
@@ -159,6 +171,9 @@ export const Toolbar = () => {
     setMinuteInput,
     goToTarget,
     goToDate,
+    zoom,
+    zoomIn,
+    zoomOut,
     eraseTool,
     setEraseTool,
     isDark,
@@ -244,6 +259,27 @@ export const Toolbar = () => {
           >
             Erase
           </button>
+
+          <div className="flex items-center gap-1">
+            <button
+              onClick={zoomOut}
+              disabled={zoom <= ZOOM_MIN}
+              className={`${btnBase} w-8 px-0 inline-flex items-center justify-center disabled:opacity-40 disabled:pointer-events-none`}
+              aria-label="Zoom out"
+              title="Zoom out"
+            >
+              <ZoomIcon out />
+            </button>
+            <button
+              onClick={zoomIn}
+              disabled={zoom >= ZOOM_MAX}
+              className={`${btnBase} w-8 px-0 inline-flex items-center justify-center disabled:opacity-40 disabled:pointer-events-none`}
+              aria-label="Zoom in"
+              title="Zoom in"
+            >
+              <ZoomIcon />
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
