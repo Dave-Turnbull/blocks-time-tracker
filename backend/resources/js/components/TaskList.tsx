@@ -26,7 +26,7 @@ const TaskList = ({ singleDayDataOnScroll }: TaskListProps) => {
 
   return (
     <section aria-label="Tasks" data-day={singleDayDataOnScroll} className="p-2">
-      <h2 className="text-5xl leading-none font-bold text-fg m-0 mb-1 px-2">Tasks</h2>
+      <h2 className="text-3xl leading-none font-bold text-fg m-0 mb-1 px-2">Tasks</h2>
 
       {sorted.length === 0 ? (
         <p className="text-base text-fg/80 m-0 px-2">No time blocks for this day.</p>

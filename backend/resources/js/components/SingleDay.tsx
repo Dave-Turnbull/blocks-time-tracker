@@ -14,9 +14,13 @@ interface SingleDayProps {
     EndCell: number | null;
   };
   minuteinput: number;
+  hoveredTime?: {
+    start: number;
+    end: number;
+  };
 }
 
-const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput }: SingleDayProps) => {
+const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput, hoveredTime }: SingleDayProps) => {
   const cellsInGroup = cellGroupTotalTime[minuteinput] / minuteinput;
 
   const startIndex = selectedCells
@@ -30,13 +34,19 @@ const SingleDay = memo(({ dayToRender, singleDayData, selectedCells, minuteinput
 
   return (
     <div key={dayToRender} className="innercontainer" draggable={false}>
-      <h2 className="flex items-baseline gap-2 text-5xl leading-none m-0 mb-3 select-none" draggable={false}>
+      <h2 className="flex items-baseline gap-2 text-3xl leading-none m-0 mb-3 select-none" draggable={false}>
         <span className="font-bold text-fg">{weekday}</span>
         <span className="font-normal text-fg">
           {day}
           <sup>{suffix}</sup>
         </span>
         <span className="font-normal text-muted">{month} {year}</span>
+        {hoveredTime && (
+          <span className="ml-auto font-normal select-none">
+            <span className="text-fg">{readableTime(hoveredTime.start)}</span>
+            <span className="text-muted"> – {readableTime(hoveredTime.end)}</span>
+          </span>
+        )}
       </h2>
       {/* The time labels hang ~8px below each group's border; pb and gap-y leave room for that. */}
       {/* Width is set from the layout maths (+1px float slack), NOT left to the

@@ -392,7 +392,7 @@ All visual styling is centralised so the look can be changed by editing one file
 
 ### Aesthetic
 
-Quiet, flat, greyscale "wireframe" look. The chrome is white, one off-black and three greys; the only hue on screen comes from task colours. No shadows or gradients — shapes come from 1px hairline borders and a fixed set of radii. Large 48px titles over a tight cell grid. Uniformity is the priority: use only the tokens and scales below.
+Quiet, flat, greyscale "wireframe" look. The chrome is white, one off-black and three greys; the only hue on screen comes from task colours. No shadows or gradients — shapes come from 1px hairline borders and a fixed set of radii. Large 30px titles over a tight cell grid. Uniformity is the priority: use only the tokens and scales below.
 
 ### Architecture
 
@@ -422,14 +422,14 @@ Interaction overlays: drag selection `bg-fg/35`, sidebar-hover link highlight `b
 
 - **Spacing:** 1, 2, 4, 8, 16, 32px only.
 - **Radii:** `rounded-panel` 16px (panels, modals, popovers), `rounded-group` 11px (cell-group border), `rounded-control` 8px (buttons, inputs, list items), `rounded-cell` 8px (outer corners of first/last cell in a group). Group = cell + 3px padding (2px visual gap + the 1px `shadow-group` line drawn inside it) so corners are concentric — keep that relationship if either changes. `rounded-group`/`rounded-cell` are defined as `calc(var(--day-scale, 1) * Npx)` so they scale with the grid. Popovers use 8px padding around 8px items for the same reason.
-- **Type:** titles `text-5xl` (3rem) with `leading-none`; body `text-sm`; labels/time labels `text-xs text-muted`.
+- **Type:** titles `text-3xl` (1.875rem) with `leading-none`; body `text-sm`; labels/time labels `text-xs text-muted`.
 - **Cell border:** `shadow-cell` (inset 1px `muted`). It is a box-shadow, not a border, so task-colour fills (child elements) paint over it and the cell stays 40×40 at scale 1. The group border is `shadow-group` for a different reason too: browsers snap real border-widths to whole pixels, which would break the exact-fill maths below.
 
 ### Layout
 
 - `App.tsx`: `main` (flex-1, `p-2`) and a 64px `footer` toolbar (`Toolbar.tsx`), each with an inner `max-w-[1440px] mx-auto` wrapper.
 - `RenderDateRange.tsx`: blocks panel (flex-1) and task panel (default 375px; drag the 8px divider between them to resize 240–700px, persisted as localStorage `sidebar_width`), each `border rounded-panel` with internal scrolling.
-- Day: weekday + day number (`fg`, number's ordinal suffix in `<sup>`) and month/year (`muted`) on the left at 3rem; groups wrap left (4px column gap, 12px row gap); cells 2px apart. Each group's time label hangs from its bottom border (label top 3px above the line) with a `bg-canvas` backing, notching the line like a fieldset legend — the border wraps only the cells.
+- Day: weekday + day number (`fg`, number's ordinal suffix in `<sup>`) and month/year (`muted`) on the left at 1.875rem; while a cell is hovered, its day's header shows the hovered time range right-aligned on the same line, at title size (start time `fg`, "– end" `muted`). Groups wrap left (4px column gap, 12px row gap); cells 2px apart. Each group's time label hangs from its bottom border (label top 3px above the line) with a `bg-canvas` backing, notching the line like a fieldset legend — the border wraps only the cells.
 - **Grid scaling:** every horizontal px dimension in the grid (cell 40, cell gap 2, group padding 3, group border 1, column gap 4, both grid radii) is written as `calc(var(--day-scale, 1) * Npx)`. The vertical space between group rows does NOT scale (12px flex row-gap + the group's 4px bottom margin = fixed 16px) — it holds the unscaled time label. `RenderDateRange` sets `--day-scale` AND `--day-row-base` (unscaled row width: n groups + gaps) on the days wrapper from a ResizeObserver via `computeDayLayout(width, groupWidth, gap, minScale, maxGroups)` (utils): fit as many groups as possible at min scale, then scale that row up to fill the container exactly. The min scale is the toolbar zoom (ToolbarContext `zoom`, default 1, steps of 0.25 within 0.5–3). Shrinking the container shrinks the scale to the min, then the row wraps one fewer group and scales back up. Time labels and day headings do NOT scale. The base-px constants live at the top of `RenderDateRange.tsx` and MUST match the component classes. Three anti-flicker invariants: each `.cell-container`'s width comes from `--day-row-base` (+1px float slack), never from the parent, so a mid-resize frame can't re-wrap the row; the solve uses width-1px of slack; and width is measured with getBoundingClientRect/contentBoxSize because integer-rounded `clientWidth` overshoots fractional widths (browser zoom) and wraps the last group.
 - Toolbar: tools on the left, actions (theme, "+ New task" placeholder, account menu with log out) on the right. Shared dropdown behaviour lives in `Popover.tsx`.
 

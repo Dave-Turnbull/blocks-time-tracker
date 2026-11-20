@@ -3,7 +3,7 @@ import SingleDay from "./SingleDay";
 import { SelectedCellsContext } from "../contexts/SelectCellsContext";
 import TaskList from "./TaskList";
 import { ToolbarContext } from "../contexts/ToolbarContext";
-import { readableTime, computeDayLayout } from "../utils/utils";
+import { computeDayLayout } from "../utils/utils";
 import { cellGroupTotalTime } from "../data/cellGroupTotalTime";
 
 // Distance from the top/bottom of the scroll content at which more days load.
@@ -25,7 +25,7 @@ export const RenderDateRange = () => {
   const { cellsData, selectedCells, extendWindow } = useContext(SelectedCellsContext);
   const { minuteinput, goToTarget, zoom } = useContext(ToolbarContext);
   const [currentFocusedDay, setCurrentFocusedDay] = useState("");
-  const [hoveredTime, setHoveredTime] = useState<{ start: number; end: number } | null>(null);
+  const [hoveredTime, setHoveredTime] = useState<{ day: string; start: number; end: number } | null>(null);
   const cellsWrapperRef = useRef<HTMLDivElement>(null);
   const daysWrapperRef = useRef<HTMLDivElement>(null);
   const dayRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -49,9 +49,11 @@ export const RenderDateRange = () => {
 
   function handleCellMouseOver(e: React.MouseEvent<HTMLDivElement>) {
     const el = (e.target as HTMLElement).closest("[data-time]");
-    if (el instanceof HTMLElement && el.dataset.time) {
+    if (el instanceof HTMLElement && el.dataset.time && el.dataset.day) {
       const start = parseInt(el.dataset.time);
-      setHoveredTime({ start, end: start + minuteinput });
+      setHoveredTime({ day: el.dataset.day, start, end: start + minuteinput });
+    } else {
+      setHoveredTime(null);
     }
   }
 
@@ -225,13 +227,6 @@ export const RenderDateRange = () => {
           onMouseOver={handleCellMouseOver}
           onMouseLeave={handleCellMouseLeave}
         >
-          <div className="sticky top-0 z-50 h-0 flex justify-end pointer-events-none">
-            {hoveredTime && (
-              <div className="bg-canvas border rounded-control px-3 py-1 text-sm text-fg">
-                {readableTime(hoveredTime.start)} – {readableTime(hoveredTime.end)}
-              </div>
-            )}
-          </div>
           <div
             className="flex flex-col gap-8"
             ref={daysWrapperRef}
@@ -249,6 +244,7 @@ export const RenderDateRange = () => {
                   singleDayData={cellsData[key]}
                   selectedCells={selectedCells.day === key ? selectedCells : undefined}
                   minuteinput={minuteinput}
+                  hoveredTime={hoveredTime?.day === key ? hoveredTime : undefined}
                 />
               </div>
             ))}
