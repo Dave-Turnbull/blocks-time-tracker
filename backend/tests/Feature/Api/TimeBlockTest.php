@@ -216,6 +216,172 @@ class TimeBlockTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Store — adjacent same-task merging
+    // -------------------------------------------------------------------------
+
+    public function test_store_merges_with_adjacent_same_task_block_before_it(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $existing = TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 540,
+            'end_time' => 600,
+        ]);
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/time-blocks', [
+            'task_id' => $task->id,
+            'date' => '2024-08-01',
+            'start_time' => 600,
+            'end_time' => 660,
+        ])->assertStatus(201);
+
+        $response->assertJson(['startTime' => 540, 'endTime' => 660]);
+        $this->assertDatabaseMissing('time_blocks', ['id' => $existing->id]);
+        $this->assertSame(1, TimeBlock::where('user_id', $user->id)->count());
+    }
+
+    public function test_store_merges_with_adjacent_same_task_block_after_it(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 600,
+            'end_time' => 660,
+        ]);
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/time-blocks', [
+            'task_id' => $task->id,
+            'date' => '2024-08-01',
+            'start_time' => 540,
+            'end_time' => 600,
+        ])->assertStatus(201);
+
+        $response->assertJson(['startTime' => 540, 'endTime' => 660]);
+        $this->assertSame(1, TimeBlock::where('user_id', $user->id)->count());
+    }
+
+    public function test_store_bridges_two_same_task_neighbours_into_one_block(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 480,
+            'end_time' => 540,
+        ]);
+        TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 600,
+            'end_time' => 660,
+        ]);
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/time-blocks', [
+            'task_id' => $task->id,
+            'date' => '2024-08-01',
+            'start_time' => 540,
+            'end_time' => 600,
+        ])->assertStatus(201);
+
+        $response->assertJson(['startTime' => 480, 'endTime' => 660]);
+        $this->assertSame(1, TimeBlock::where('user_id', $user->id)->count());
+    }
+
+    public function test_store_does_not_merge_with_adjacent_block_of_a_different_task(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        $otherTask = Task::factory()->for($user)->create();
+        TimeBlock::factory()->for($user)->for($otherTask)->create([
+            'date' => '2024-08-01',
+            'start_time' => 540,
+            'end_time' => 600,
+        ]);
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/time-blocks', [
+            'task_id' => $task->id,
+            'date' => '2024-08-01',
+            'start_time' => 600,
+            'end_time' => 660,
+        ])->assertStatus(201);
+
+        $response->assertJson(['startTime' => 600, 'endTime' => 660]);
+        $this->assertSame(2, TimeBlock::where('user_id', $user->id)->count());
+    }
+
+    public function test_store_does_not_merge_same_task_block_separated_by_a_gap(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 540,
+            'end_time' => 600,
+        ]);
+        Sanctum::actingAs($user);
+
+        $response = $this->postJson('/api/time-blocks', [
+            'task_id' => $task->id,
+            'date' => '2024-08-01',
+            'start_time' => 615,
+            'end_time' => 660,
+        ])->assertStatus(201);
+
+        $response->assertJson(['startTime' => 615, 'endTime' => 660]);
+        $this->assertSame(2, TimeBlock::where('user_id', $user->id)->count());
+    }
+
+    public function test_store_does_not_merge_same_task_block_on_another_date(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 540,
+            'end_time' => 600,
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/time-blocks', [
+            'task_id' => $task->id,
+            'date' => '2024-08-02',
+            'start_time' => 600,
+            'end_time' => 660,
+        ])->assertStatus(201);
+
+        $this->assertSame(2, TimeBlock::where('user_id', $user->id)->count());
+    }
+
+    public function test_store_coalesces_overlapping_same_task_block(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create();
+        TimeBlock::factory()->for($user)->for($task)->create([
+            'date' => '2024-08-01',
+            'start_time' => 540,
+            'end_time' => 600,
+        ]);
+        Sanctum::actingAs($user);
+
+        // Overlap resolution trims the existing block flush to the new range,
+        // then the adjacency merge absorbs it: one block, not two.
+        $response = $this->postJson('/api/time-blocks', [
+            'task_id' => $task->id,
+            'date' => '2024-08-01',
+            'start_time' => 570,
+            'end_time' => 660,
+        ])->assertStatus(201);
+
+        $response->assertJson(['startTime' => 540, 'endTime' => 660]);
+        $this->assertSame(1, TimeBlock::where('user_id', $user->id)->count());
+    }
+
+    // -------------------------------------------------------------------------
     // Store — overlap resolution
     // -------------------------------------------------------------------------
 
