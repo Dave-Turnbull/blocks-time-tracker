@@ -60,8 +60,10 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │   └── web.php  ← Authentik redirect/callback/link-account routes, then the catch-all that returns app.blade.php for SPA routing
 │   ├── resources/
 │   │   ├── views/
-│   │   │   ├── app.blade.php               ← Root HTML; @viteReactRefresh + @vite(['resources/js/main.tsx'])
-│   │   │   └── auth/link-account.blade.php ← Server-rendered (not SPA) Authentik "prove you own this account" form
+│   │   │   ├── app.blade.php                   ← Root HTML; @viteReactRefresh + @vite(['resources/js/main.tsx'])
+│   │   │   ├── auth/link-account.blade.php     ← Server-rendered (not SPA) Authentik "prove you own this account" form
+│   │   │   ├── auth/link-unavailable.blade.php ← Shown when the email-matched account is passwordless (SSO-only), so the password link step can't apply
+│   │   │   └── errors/                         ← Branded override pages for Laravel's default error views: layout.blade.php + 404/403/419/500 (theme-aware, link back to the app)
 │   │   └── js/                       ← All React/TypeScript source
 │   │       ├── main.tsx              ← Entry point; BrowserRouter, AuthProvider, route guards
 │   │       ├── App.tsx               ← Root component; ToolbarProvider → SelectedCellsProvider → RenderDateRange + Toolbar
@@ -102,7 +104,7 @@ A time-tracking SPA. Users drag-select cells on a calendar grid to schedule colo
 │   │           └── components/Toolbar.test.tsx            ← 6 tests: go-to date + zoom controls
 │   ├── tests/Feature/Api/
 │   │   ├── AuthTest.php       ← 14 tests: register, login, logout, /auth/user
-│   │   ├── AuthentikTest.php  ← 9 tests: enabled flag, redirect/callback gating, link/match/provision flows, throttling
+│   │   ├── AuthentikTest.php  ← 10 tests: enabled flag, redirect/callback gating, link/match/provision flows, throttling
 │   │   ├── TaskTest.php       ← 16 tests: CRUD + 401/403 isolation
 │   │   └── TimeBlockTest.php  ← 29 tests: CRUD + date range + grouped response + overlap/adjacent-merge behaviour
 │   ├── vite.config.ts    ← laravel-vite-plugin + @vitejs/plugin-react; HMR host=localhost (prevents Docker CORS)
@@ -194,7 +196,12 @@ token in `localStorage`.
    `provider_user_id` being the stable OIDC `sub` claim) → log straight in.
 2. Email matches an existing password account, no link yet → **not** auto-linked
    (trusting an IdP-asserted email alone would let a compromised/misconfigured IdP
-   hijack a local account). Redirects to `/auth/link-account` instead.
+   hijack a local account). Redirects to `/auth/link-account` instead. But if the
+   matched account is **passwordless** (itself SSO-provisioned, so there's no
+   password to confirm), the link form can never succeed — the callback renders
+   `auth/link-unavailable` (409) explaining the dead-end rather than looping on
+   "Incorrect password." (Auto-linking the passwordless case would be safe but is
+   deliberately left as a server-side admin action.)
 3. No match → provisions a new `User` (`password: null`) and links it. Unlike
    CommunityHub there's no separate "is OAuth signup open" setting — the single
    `AUTHENTIK_ENABLED` flag already gates the whole feature.
@@ -298,7 +305,7 @@ docker compose exec app php artisan test
 - Uses SQLite in-memory (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:` in phpunit.xml)
 - All test classes use `RefreshDatabase`
 - Authenticate with `Sanctum::actingAs($user)`
-- **84 tests, all passing**
+- **85 tests, all passing**
 
 ### Frontend (Vitest) — run from `backend/`:
 ```bash

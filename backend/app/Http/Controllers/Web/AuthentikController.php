@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\AuthentikLoginService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 use Laravel\Socialite\Facades\Socialite;
@@ -48,7 +49,7 @@ class AuthentikController extends Controller
         return Socialite::driver('authentik')->redirect();
     }
 
-    public function callback(Request $request, AuthentikLoginService $service): RedirectResponse
+    public function callback(Request $request, AuthentikLoginService $service): RedirectResponse|Response
     {
         abort_unless(config('services.authentik.enabled'), 404);
 
@@ -63,6 +64,17 @@ class AuthentikController extends Controller
         }
 
         if ($existing = $service->findLinkableUser($oauthUser->getEmail())) {
+            // A passwordless account (created via SSO, not password signup)
+            // can never satisfy the password-confirmation link step below, so
+            // sending it there is an inescapable dead-end. Explain instead.
+            // (A safe auto-link for this passwordless case is possible — see
+            // the PR discussion — but is intentionally not done here.)
+            if ($existing->password === null) {
+                return response()->view('auth.link-unavailable', [
+                    'email' => $oauthUser->getEmail(),
+                ], 409);
+            }
+
             $request->session()->put('pending_oauth_identity', [
                 'provider_user_id' => $oauthUser->getId(),
                 'email' => $oauthUser->getEmail(),
@@ -86,7 +98,7 @@ class AuthentikController extends Controller
         return view('auth.link-account', ['email' => $pending['email'], 'error' => null]);
     }
 
-    public function linkAccount(Request $request, AuthentikLoginService $service): View|RedirectResponse
+    public function linkAccount(Request $request, AuthentikLoginService $service): View|RedirectResponse|Response
     {
         $pending = $request->session()->get('pending_oauth_identity');
         abort_unless($pending, 403);
@@ -95,7 +107,17 @@ class AuthentikController extends Controller
 
         $user = User::find($pending['user_id']);
 
-        if (! $user || $user->password === null || ! Hash::check($validated['password'], $user->password)) {
+        // Passwordless (SSO-only) account: no password can ever match, so
+        // don't loop on "Incorrect password." — explain the dead-end.
+        if ($user && $user->password === null) {
+            $request->session()->forget('pending_oauth_identity');
+
+            return response()->view('auth.link-unavailable', [
+                'email' => $pending['email'],
+            ], 409);
+        }
+
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return view('auth.link-account', [
                 'email' => $pending['email'],
                 'error' => 'Incorrect password.',

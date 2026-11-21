@@ -100,6 +100,22 @@ class AuthentikTest extends TestCase
         $this->assertDatabaseHas('user_oauth_identities', ['user_id' => $user->id, 'provider_user_id' => 'sub-123']);
     }
 
+    public function test_a_passwordless_account_match_is_not_a_password_dead_end(): void
+    {
+        // An account created via SSO (no password) can never satisfy the
+        // password-link step, so the callback explains instead of looping.
+        $user = User::factory()->create(['email' => 'oauth-user@example.com', 'password' => null]);
+
+        Socialite::fake('authentik', $this->fakeOAuthUser());
+
+        $response = $this->get('/auth/authentik/callback');
+
+        $response->assertStatus(409);
+        $response->assertSee("Can't link this account", false);
+        $response->assertDontSee('/auth/link-account');
+        $this->assertDatabaseCount('user_oauth_identities', 0);
+    }
+
     public function test_an_incorrect_password_on_the_link_step_is_rejected(): void
     {
         User::factory()->create(['email' => 'oauth-user@example.com', 'password' => Hash::make('secret123')]);
